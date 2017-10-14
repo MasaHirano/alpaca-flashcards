@@ -10,68 +10,22 @@ import Swipeout from 'react-native-swipeout';
 import { StackNavigator } from 'react-navigation';
 import { ListView } from 'realm/react-native';
 
+import Phrase from './app/models/Phrase';
+import Tag from './app/models/Tag';
+import Importer from './app/Importer';
+
 const Realm = require('realm');
 const _ = require('lodash');
-
-class Phrase {
-  get key() {
-    return this.sentence;
-  }
-
-  isDone() {
-    return this.status == 1;
-  }
-};
-
-Phrase.schema = {
-  name: 'Phrase',
-  primaryKey: 'id',
-  properties: {
-    id:       'int',
-    sentence: 'string',
-    status:   { type: 'int', default: 0 },          // 0: undone, 1: done, 2: archived
-    tags:     { type: 'list', objectType: 'Tag' },
-  }
-};
-class Tag {};
-Tag.schema = {
-  name: 'Tag',
-  primaryKey: 'id',
-  properties: {
-    id:      'int',
-    name:    'string',
-    phrases: { type: 'linkingObjects', objectType: 'Phrase', property: 'tags' },
-  }
-};
 
 const realm = new Realm({ schema: [Phrase, Tag] });
 
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
-    var phrases = realm.objects('Phrase').sorted('status').slice();
+    const phrases = realm.objects('Phrase').sorted('status').slice(0, 10);
     this.state = {
       _data: phrases,
     };
-    // realm.write(() => {
-    //   const phrase = realm.create('Phrase', {
-    //     id: 3,
-    //     sentence: "bar",
-    //     tags: realm.objects('Tag'),
-    //   });
-    // });
-    // realm.write(() => {
-    //   const tag = realm.create('Tag', {
-    //     id: 1,
-    //     name: 'BigBangTheory',
-    //   });
-    // });
-    // realm.write(() => {
-    //   const tag = realm.create('Tag', {
-    //     id: 2,
-    //     name: 'BigBangTheory_S05E01',
-    //   });
-    // });
   }
 
   static navigationOptions = {
@@ -79,15 +33,32 @@ class HomeScreen extends React.Component {
   };
 
   deletePhrase(item, index) {
-    var newItem = _.clone(this.state._data);
+    const newItem = _.clone(this.state._data);
     newItem.splice(index, 1);
     realm.write(() => {
-      item.status = (item.status == 0) ? 1 : 0;
+      item.status = (item.isDone() ^ true); // toggle status
     });
     newItem.push(item);
     this.setState({
       _data: newItem,
     });
+  }
+
+  renderTags(item) {
+    var tags = item.tags.map((t, i) => {
+      return (
+        <View style={styles.tagInnerView} key={i}>
+          <Text style={styles.tagText} key={i} >
+            {t.name}
+          </Text>
+        </View>
+      );
+    });
+    return (
+      <View style={[styles.tagView]}>
+        {tags}
+      </View>
+    );
   }
 
   renderItem({ item, index }) {
@@ -98,18 +69,23 @@ class HomeScreen extends React.Component {
       onPress: () => { this.deletePhrase(item, index) }
     }];
 
-    const itemStyle = (item.status == 0) ? styles.item : styles.doneItem;
-
     return (
-      <Swipeout right={swipeBtns}
+      <Swipeout
+        right={swipeBtns}
         autoClose={true}
         backgroundColor='transparent'>
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
           onPress={() => {}} >
-          <Text style={[styles.item, item.isDone() && styles.doneItem]}>
-            {item.key}
-          </Text>
+          <View style={styles.item}>
+            <Text
+              style={{ fontSize: 18, marginBottom: 2 }}
+              ellipsizeMode='tail'
+              numberOfLines={1} >
+              {item.key}
+            </Text>
+            {this.renderTags(item)}
+          </View>
         </TouchableHighlight>
       </Swipeout>
     );
@@ -122,6 +98,7 @@ class HomeScreen extends React.Component {
           data={this.state._data}
           renderItem={this.renderItem.bind(this)}
           keyExtractor={(item) => item.key}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
     );
@@ -145,12 +122,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center'
   },
+  separator: {
+    height: 1,
+    width: "86%",
+    backgroundColor: "#CED0CE",
+  },
   item: {
     padding: 10,
-    fontSize: 18,
-    height: 44,
+    height: 60,
   },
   doneItem: {
     backgroundColor: 'lightgray',
+  },
+  tagView: {
+    flexDirection:'row',
+    flexWrap:'wrap',
+  },
+  tagInnerView: {
+    backgroundColor: 'royalblue',
+    borderRadius: 10,
+    marginRight: 5,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  tagText: {
+    color: 'white',
+    fontSize: 11,
   },
 })
