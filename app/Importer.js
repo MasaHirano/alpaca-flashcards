@@ -2,7 +2,7 @@ import Phrase from './models/Phrase';
 import Tag from './models/Tag';
 
 const Realm = require('realm');
-const realm = new Realm({ schema: [Phrase, Tag] });
+const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 1 });
 
 export default class Importter {
   constructor() {

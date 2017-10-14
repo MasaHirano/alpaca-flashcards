@@ -12,12 +12,12 @@ import { ListView } from 'realm/react-native';
 
 import Phrase from './app/models/Phrase';
 import Tag from './app/models/Tag';
-import Importer from './app/Importer';
+// import Importer from './app/Importer';
 
 const Realm = require('realm');
 const _ = require('lodash');
 
-const realm = new Realm({ schema: [Phrase, Tag] });
+const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 1 });
 
 class HomeScreen extends React.Component {
   constructor(props) {
@@ -37,6 +37,7 @@ class HomeScreen extends React.Component {
     newItem.splice(index, 1);
     realm.write(() => {
       item.status = (item.isDone() ^ true); // toggle status
+      item.updatedAt = new Date();
     });
     newItem.push(item);
     this.setState({
@@ -77,12 +78,12 @@ class HomeScreen extends React.Component {
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
           onPress={() => {}} >
-          <View style={styles.item}>
+          <View style={styles.phraseView}>
             <Text
-              style={{ fontSize: 18, marginBottom: 2 }}
+              style={styles.phraseText}
               ellipsizeMode='tail'
               numberOfLines={1} >
-              {item.key}
+              {item.key} {item.createdAt.toString()}
             </Text>
             {this.renderTags(item)}
           </View>
@@ -127,12 +128,16 @@ const styles = StyleSheet.create({
     width: "86%",
     backgroundColor: "#CED0CE",
   },
-  item: {
+  phraseView: {
     padding: 10,
     height: 60,
   },
-  doneItem: {
+  phraseDoneView: {
     backgroundColor: 'lightgray',
+  },
+  phraseText: {
+    fontSize: 18,
+    marginBottom: 2,
   },
   tagView: {
     flexDirection:'row',
