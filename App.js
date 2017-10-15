@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import { StackNavigator } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Modal from 'react-native-modal';
 
 import realm from './app/db/realm';
 // import Importer from './app/Importer';
@@ -63,12 +64,15 @@ class HomeScreen extends React.Component {
     }
     this.state = {
       _data: phrases,
+      modalVisible: false,
+      selectedPhrase: {},
     };
   }
 
   get _pickupdPhrases() {
     return realm.objects('Phrase').filtered('pickupd = $0', true);
   }
+
 
   _pickupPhrases() {
     const now = new Date();
@@ -94,6 +98,15 @@ class HomeScreen extends React.Component {
     this.setState({
       _data: _.clone(this.state._data),
     });
+  }
+
+  _setModalVisible(visible) {
+    this.setState({ modalVisible: visible });
+  }
+
+  _showPhraseFor(phrase) {
+    this.setState({ selectedPhrase: phrase });
+    this._setModalVisible(true);
   }
 
   _renderTags(item) {
@@ -129,7 +142,7 @@ class HomeScreen extends React.Component {
         backgroundColor='transparent'>
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
-          onPress={() => {}} >
+          onPress={() => { this._showPhraseFor(item) }} >
           <View style={[styles.phraseView, item.isCompleted() && styles.phraseDoneView]}>
             <View style={styles.phraseSentenceView}>
               <View style={styles.phraseSentenceBodyView}>
@@ -165,6 +178,25 @@ class HomeScreen extends React.Component {
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
+
+        <Modal
+          animationIn='fadeIn'
+          animationOut='fadeOut'
+          animationInTiming={100}
+          animationOutTiming={100}
+          isVisible={this.state.modalVisible}
+          onRequestClose={() => {}} >
+          <TouchableWithoutFeedback // This touchable closes modal.
+            onPress={() => { this._setModalVisible(false) }} >
+            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
+              <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }}>
+                <Text style={{ fontSize: 16, lineHeight: 28 }}>
+                  {this.state.selectedPhrase.sentence}
+                </Text>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     );
   }
