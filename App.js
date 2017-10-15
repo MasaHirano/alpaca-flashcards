@@ -5,9 +5,10 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import { StackNavigator } from 'react-navigation';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import realm from './app/db/realm';
 // import Importer from './app/Importer';
@@ -15,15 +16,48 @@ import realm from './app/db/realm';
 const _ = require('lodash');
 
 class HomeScreen extends React.Component {
-  static navigationOptions = {
-    title: "Today's English phrases",
+  static navigationOptions = ({ navigation }) => {
+    const { params } = navigation.state;
+    return {
+      title: "Today's English phrases",
+      headerRight: (
+        <Icon.Button
+          name='refresh'
+          color='blue'
+          backgroundColor='transparent'
+          onPress={() => params.refreshPickups()}
+        />
+      ),
+    };
   };
+
+  componentDidMount() {
+    this.props.navigation.setParams({
+      refreshPickups: this._refreshPickups.bind(this),
+    });
+  }
+
+  _refreshPickups() {
+    const now = new Date();
+    realm.write(() => {
+      this._pickupdPhrases.snapshot().forEach(phrase => {
+        phrase.pickupd = false;
+        phrase.updatedAt = now;
+      });
+    });
+    this.setState({
+      _data: this._pickupPhrases(),
+    });
+  }
 
   constructor(props) {
     super(props);
+    // realm.write(() => {
+    //   realm.objects('Phrase').snapshot().forEach(p => p.completedAt = null);
+    // });
     // const importer = new Importer();
     // importer.import();
-    var phrases = realm.objects('Phrase').filtered('pickupd = $0', true).slice();
+    var phrases = this._pickupdPhrases.slice();
     if (phrases.length == 0) {
       phrases = this._pickupPhrases();
     }
@@ -32,14 +66,18 @@ class HomeScreen extends React.Component {
     };
   }
 
+  get _pickupdPhrases() {
+    return realm.objects('Phrase').filtered('pickupd = $0', true);
+  }
+
   _pickupPhrases() {
-    var pickupd = realm.objects('Phrase').filtered('completedAt = $0', null).slice(0, 8);
     const now = new Date();
+    const pickupd = realm.objects('Phrase').filtered('completedAt = $0', null).slice(0, 8);
     realm.write(() => {
-      for (let phrase of pickupd) {
+      pickupd.forEach(phrase => {
         phrase.pickupd = true;
         phrase.updatedAt = now;
-      }
+      });
     });
 
     return pickupd;
@@ -53,10 +91,6 @@ class HomeScreen extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    // const newItem = _.clone(this.state._data);
-    // console.log(newItem.constructor.name);
-    // newItem.splice(index, 1);
-    // newItem.push(item);
     this.setState({
       _data: _.clone(this.state._data),
     });
