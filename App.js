@@ -22,6 +22,8 @@ const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 1 });
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
+    // const importer = new Importer();
+    // importer.import();
     const phrases = realm.objects('Phrase').sorted('status').slice(0, 10);
     this.state = {
       _data: phrases,
@@ -32,7 +34,7 @@ class HomeScreen extends React.Component {
     title: "Today's English phrases"
   };
 
-  deletePhrase(item, index) {
+  completePhrase(item, index) {
     const newItem = _.clone(this.state._data);
     newItem.splice(index, 1);
     realm.write(() => {
@@ -46,28 +48,29 @@ class HomeScreen extends React.Component {
   }
 
   renderTags(item) {
-    var tags = item.tags.map((t, i) => {
-      return (
-        <View style={styles.tagInnerView} key={i}>
-          <Text style={styles.tagText} key={i} >
-            {t.name}
-          </Text>
-        </View>
-      );
-    });
     return (
-      <View style={[styles.tagView]}>
-        {tags}
+      <View style={styles.tagView}>
+        {
+          item.tags.map((tag, index) => {
+            return (
+              <View style={styles.tagInnerView} key={index}>
+                <Text style={styles.tagText}>
+                  #{tag.name}
+                </Text>
+              </View>
+            );
+          })
+        }
       </View>
     );
   }
 
   renderItem({ item, index }) {
     const swipeBtns = [{
-      text: 'Delete',
-      backgroundColor: 'red',
+      text: 'Complete',
+      backgroundColor: 'blue',
       underlayColor: 'rgba(0,0,0,1)',
-      onPress: () => { this.deletePhrase(item, index) }
+      onPress: () => { this.completePhrase(item, index) }
     }];
 
     return (
@@ -78,14 +81,17 @@ class HomeScreen extends React.Component {
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
           onPress={() => {}} >
-          <View style={styles.phraseView}>
+          <View style={[styles.phraseView, item.isDone() && styles.phraseDoneView]}>
             <Text
               style={styles.phraseText}
               ellipsizeMode='tail'
               numberOfLines={1} >
-              {item.key} {item.createdAt.toString()}
+              {item.key}
             </Text>
             {this.renderTags(item)}
+            <Text style={styles.phraseCreatedAtText}>
+              {item.createdAt.toLocaleString('en-US')}
+            </Text>
           </View>
         </TouchableHighlight>
       </Swipeout>
@@ -125,12 +131,11 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    width: "86%",
     backgroundColor: "#CED0CE",
   },
   phraseView: {
     padding: 10,
-    height: 60,
+    height: 72,
   },
   phraseDoneView: {
     backgroundColor: 'lightgray',
@@ -139,19 +144,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 2,
   },
+  phraseCreatedAtText: {
+    color: 'dimgray',
+    fontSize: 9,
+  },
   tagView: {
     flexDirection:'row',
-    flexWrap:'wrap',
+    flexWrap:'nowrap',
   },
   tagInnerView: {
-    backgroundColor: 'royalblue',
-    borderRadius: 10,
-    marginRight: 5,
-    paddingHorizontal: 5,
+    // backgroundColor: 'lightskyblue',
+    // borderRadius: 10,
+    // paddingHorizontal: 5,
     paddingVertical: 2,
+    marginRight: 5,
   },
   tagText: {
-    color: 'white',
+    color: 'midnightblue',
     fontSize: 11,
   },
 })

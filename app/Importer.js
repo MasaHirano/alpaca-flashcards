@@ -11,19 +11,18 @@ export default class Importter {
   import() {
     var rows = this.fetchData();
     for (let row of rows) {
-      // console.log(row);
       realm.write(() => {
         var tag = realm.objects('Tag').filtered('name = $0', row['tag'])[0];
         if (!tag) {
-          const nextTagId = realm.objects('Tag').max('id') + 1;
+          var maxTagId = realm.objects('Tag').max('id');
           tag = realm.create('Tag', {
-            id: nextTagId,
+            id: isNaN(maxTagId) ? 1 : ++maxTagId,
             name: row['tag'],
           })
         }
-        const nextPhraseId = realm.objects('Phrase').max('id') + 1;
+        var maxPhraseId = realm.objects('Phrase').max('id');
         const phrase = realm.create('Phrase', {
-          id: nextPhraseId,
+          id: isNaN(maxPhraseId) ? 1 : ++maxPhraseId,
           sentence: row['sentence'],
           tags: [].concat(tag),
         });
