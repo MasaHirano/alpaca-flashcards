@@ -24,7 +24,7 @@ class HomeScreen extends React.Component {
     super(props);
     // const importer = new Importer();
     // importer.import();
-    const phrases = realm.objects('Phrase').sorted('status').slice(0, 10);
+    const phrases = realm.objects('Phrase').sorted('status').slice(0, 8);
     this.state = {
       _data: phrases,
     };
@@ -34,7 +34,7 @@ class HomeScreen extends React.Component {
     title: "Today's English phrases"
   };
 
-  completePhrase(item, index) {
+  _completePhrase(item, index) {
     const newItem = _.clone(this.state._data);
     newItem.splice(index, 1);
     realm.write(() => {
@@ -47,7 +47,7 @@ class HomeScreen extends React.Component {
     });
   }
 
-  renderTags(item) {
+  _renderTags(item) {
     return (
       <View style={styles.tagView}>
         {
@@ -65,12 +65,12 @@ class HomeScreen extends React.Component {
     );
   }
 
-  renderItem({ item, index }) {
+  _renderItem({ item, index }) {
     const swipeBtns = [{
       text: 'Complete',
       backgroundColor: 'blue',
       underlayColor: 'rgba(0,0,0,1)',
-      onPress: () => { this.completePhrase(item, index) }
+      onPress: () => { this._completePhrase(item, index) }
     }];
 
     return (
@@ -82,13 +82,22 @@ class HomeScreen extends React.Component {
           underlayColor='rgba(192,192,192,1)'
           onPress={() => {}} >
           <View style={[styles.phraseView, item.isDone() && styles.phraseDoneView]}>
-            <Text
-              style={styles.phraseText}
-              ellipsizeMode='tail'
-              numberOfLines={1} >
-              {item.key}
-            </Text>
-            {this.renderTags(item)}
+            <View style={styles.phraseSentenceView}>
+              <View style={styles.phraseSentenceBodyView}>
+                <Text
+                  style={styles.phraseText}
+                  ellipsizeMode='tail'
+                  numberOfLines={1} >
+                  {item.key}
+                </Text>
+              </View>
+              <View style={styles.phraseSentenceAppendixView}>
+                <Text style={[styles.phraseText, styles.phraseSentenceAppendixText]} >
+                  >
+                </Text>
+              </View>
+            </View>
+            {this._renderTags(item)}
             <Text style={styles.phraseCreatedAtText}>
               {item.createdAt.toLocaleString('en-US')}
             </Text>
@@ -103,8 +112,8 @@ class HomeScreen extends React.Component {
       <View style={styles.container}>
         <FlatList
           data={this.state._data}
-          renderItem={this.renderItem.bind(this)}
-          keyExtractor={(item) => item.key}
+          renderItem={this._renderItem.bind(this)}
+          keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
@@ -125,7 +134,6 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 22,
     backgroundColor: '#fff',
     justifyContent: 'center'
   },
@@ -136,6 +144,7 @@ const styles = StyleSheet.create({
   phraseView: {
     padding: 10,
     height: 72,
+    marginBottom: 3,
   },
   phraseDoneView: {
     backgroundColor: 'lightgray',
@@ -148,15 +157,26 @@ const styles = StyleSheet.create({
     color: 'dimgray',
     fontSize: 9,
   },
+  phraseSentenceView: {
+    flexDirection: 'row',
+    marginBottom: 3,
+  },
+  phraseSentenceBodyView: {
+    width: '95%',
+  },
+  phraseSentenceAppendixView: {
+    width: '5%',
+  },
+  phraseSentenceAppendixText: {
+    textAlign: 'right',
+    color: 'lightgray',
+  },
   tagView: {
-    flexDirection:'row',
-    flexWrap:'nowrap',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    marginBottom: 3,
   },
   tagInnerView: {
-    // backgroundColor: 'lightskyblue',
-    // borderRadius: 10,
-    // paddingHorizontal: 5,
-    paddingVertical: 2,
     marginRight: 5,
   },
   tagText: {

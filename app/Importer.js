@@ -8,21 +8,23 @@ export default class Importter {
   constructor() {
   }
 
+  _calculateNextIdOf(model) {
+    var maxId = realm.objects(model).max('id');
+    return isNaN(maxId) ? 1 : ++maxId;
+  }
+
   import() {
-    var rows = this.fetchData();
-    for (let row of rows) {
+    for (let row of this._fetchData()) {
       realm.write(() => {
         var tag = realm.objects('Tag').filtered('name = $0', row['tag'])[0];
         if (!tag) {
-          var maxTagId = realm.objects('Tag').max('id');
           tag = realm.create('Tag', {
-            id: isNaN(maxTagId) ? 1 : ++maxTagId,
+            id: this._calculateNextIdOf('Tag'),
             name: row['tag'],
           })
         }
-        var maxPhraseId = realm.objects('Phrase').max('id');
         const phrase = realm.create('Phrase', {
-          id: isNaN(maxPhraseId) ? 1 : ++maxPhraseId,
+          id: this._calculateNextIdOf('Phrase'),
           sentence: row['sentence'],
           tags: [].concat(tag),
         });
@@ -30,7 +32,7 @@ export default class Importter {
     }
   }
 
-  fetchData() {
+  _fetchData() {
     const data = [
       ["Don't you dare", "BigBangTheory_S02E16"],
       ["There's kind of an obvious solution here", "BigBangTheory_S02E16"],
