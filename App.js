@@ -5,45 +5,60 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, VirtualizedList } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import { StackNavigator } from 'react-navigation';
-import { ListView } from 'realm/react-native';
 
-import Phrase from './app/models/Phrase';
-import Tag from './app/models/Tag';
+import realm from './app/db/realm';
 // import Importer from './app/Importer';
 
-const Realm = require('realm');
 const _ = require('lodash');
 
-const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 2 });
-
 class HomeScreen extends React.Component {
+  static navigationOptions = {
+    title: "Today's English phrases",
+  };
+
   constructor(props) {
     super(props);
     // const importer = new Importer();
     // importer.import();
-    const phrases = realm.objects('Phrase').sorted('status').slice(0, 8);
+    var phrases = realm.objects('Phrase').filtered('pickupd = $0', true).slice();
+    if (phrases.length == 0) {
+      phrases = this._pickupPhrases();
+    }
     this.state = {
       _data: phrases,
     };
   }
 
-  static navigationOptions = {
-    title: "Today's English phrases"
-  };
+  _pickupPhrases() {
+    var pickupd = realm.objects('Phrase').filtered('completedAt = $0', null).slice(0, 8);
+    const now = new Date();
+    realm.write(() => {
+      for (let phrase of pickupd) {
+        phrase.pickupd = true;
+        phrase.updatedAt = now;
+      }
+    });
+
+    return pickupd;
+  }
 
   _completePhrase(item, index) {
-    const newItem = _.clone(this.state._data);
-    newItem.splice(index, 1);
+    // Update phrase's status.
+    const now = new Date();
     realm.write(() => {
-      item.status = (item.isDone() ^ true); // toggle status
-      item.updatedAt = new Date();
+      item.completedAt = (item.isCompleted()) ? null : now; // toggle status
+      item.updatedAt = now;
     });
-    newItem.push(item);
+    // Update lists for display.
+    // const newItem = _.clone(this.state._data);
+    // console.log(newItem.constructor.name);
+    // newItem.splice(index, 1);
+    // newItem.push(item);
     this.setState({
-      _data: newItem,
+      _data: _.clone(this.state._data),
     });
   }
 
@@ -67,7 +82,7 @@ class HomeScreen extends React.Component {
 
   _renderItem({ item, index }) {
     const swipeBtns = [{
-      text: 'Complete',
+      text: (item.isCompleted()) ? 'Revert' : 'Complete',
       backgroundColor: 'blue',
       underlayColor: 'rgba(0,0,0,1)',
       onPress: () => { this._completePhrase(item, index) }
@@ -81,7 +96,7 @@ class HomeScreen extends React.Component {
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
           onPress={() => {}} >
-          <View style={[styles.phraseView, item.isDone() && styles.phraseDoneView]}>
+          <View style={[styles.phraseView, item.isCompleted() && styles.phraseDoneView]}>
             <View style={styles.phraseSentenceView}>
               <View style={styles.phraseSentenceBodyView}>
                 <Text
@@ -144,7 +159,6 @@ const styles = StyleSheet.create({
   phraseView: {
     padding: 10,
     height: 72,
-    marginBottom: 3,
   },
   phraseDoneView: {
     backgroundColor: 'lightgray',
