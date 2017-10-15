@@ -12,11 +12,13 @@ Phrase.schema = {
   name: 'Phrase',
   primaryKey: 'id',
   properties: {
-    id:        'int',
-    sentence:  'string',
-    status:    { type: 'int', default: 0 },          // 0: undone, 1: done, 2: archived
-    tags:      { type: 'list', objectType: 'Tag' },
-    createdAt: { type: 'date', default: new Date() },
-    updatedAt: { type: 'date', default: new Date() },
+    id:          'int',
+    sentence:    'string',
+    status:      { type: 'int', default: 0 },          // 0: undone, 1: done, 2: archived
+    tags:        { type: 'list', objectType: 'Tag' },
+    pickupd:     { type: 'bool', default: false },
+    completedAt: { type: 'date', optional: true },
+    createdAt:   { type: 'date', default: new Date() },
+    updatedAt:   { type: 'date', default: new Date() },
   }
 };

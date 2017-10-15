@@ -17,7 +17,7 @@ import Tag from './app/models/Tag';
 const Realm = require('realm');
 const _ = require('lodash');
 
-const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 1 });
+const realm = new Realm({ schema: [Phrase, Tag], schemaVersion: 2 });
 
 class HomeScreen extends React.Component {
   constructor(props) {
