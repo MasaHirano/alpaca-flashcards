@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 
 import realm from './app/db/realm';
-// import Importer from './app/Importer';
+import Importer from './app/Importer';
 
 const _ = require('lodash');
 
@@ -56,8 +56,11 @@ class HomeScreen extends React.Component {
     // realm.write(() => {
     //   realm.objects('Phrase').snapshot().forEach(p => p.completedAt = null);
     // });
-    // const importer = new Importer();
-    // importer.import();
+    if (realm.objects('Phrase').length == 0) {
+      const importer = new Importer();
+      importer.import();
+    }
+
     var phrases = this._pickupdPhrases.slice();
     if (phrases.length == 0) {
       phrases = this._pickupPhrases();
@@ -72,7 +75,6 @@ class HomeScreen extends React.Component {
   get _pickupdPhrases() {
     return realm.objects('Phrase').filtered('pickupd = $0', true);
   }
-
 
   _pickupPhrases() {
     const now = new Date();
