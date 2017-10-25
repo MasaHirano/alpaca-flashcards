@@ -3,6 +3,17 @@ export default class Phrase {
     return this.sentence;
   }
 
+  get sheetValues() {
+    return [
+      this.id,
+      this.sentence,
+      this.tags.map(tag => tag.name).join(','),
+      this.completedAt,
+      this.createdAt,
+      this.updatedAt,
+    ];
+  }
+
   isCompleted() {
     return (this.completedAt instanceof Date);
   }
