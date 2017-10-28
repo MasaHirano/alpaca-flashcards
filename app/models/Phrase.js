@@ -1,4 +1,10 @@
+const tabSeparator = ',';
+
 export default class Phrase {
+  static get tagSeparator() {
+    return tabSeparator;
+  }
+
   get key() {
     return this.sentence;
   }
@@ -7,7 +13,7 @@ export default class Phrase {
     return [
       this.id,
       this.sentence,
-      this.tags.map(tag => tag.name).join(','),
+      this.tags.map(tag => tag.name).join(Phrase.tabSeparator),
       this.completedAt,
       this.createdAt,
       this.updatedAt,

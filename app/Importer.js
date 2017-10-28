@@ -5,26 +5,26 @@ import realm from './db/realm';
 const _ = require('lodash');
 
 export default class Importter {
-
   constructor() {
   }
 
-  import(phrases) {
-    for (let row of phrases) {
+  import(rows) {
+    const keys = ['id', 'sentence', 'tags', 'completedAt', 'createdAt', 'updatedAt'];
+    for (let row of rows) {
+      const phraseRow = _.zipObject(keys, row);
       realm.write(() => {
-        const tags = this._saveTags(row);
-        this._savePhrase(row, tags);
+        const tags = this._saveTags(phraseRow);
+        this._savePhrase(phraseRow, tags);
       });
     }
   }
 
   _calculateNextIdOf(model) {
-    var maxId = realm.objects(model).max('id');
-    return isNaN(maxId) ? 1 : ++maxId;
+    return _.add(realm.objects(model).max('id'), 1);
   }
 
   _saveTags(row) {
-    const tagNames = row['tags'].split(',').map(t => t.trim());
+    const tagNames = row['tags'].split(Phrase.tabSeparator).map(t => t.trim());
     const filterQuery = tagNames.map((_, i) => `name = $${i}`).join(' OR ');
     const tags = realm.objects('Tag').filtered(filterQuery, ...tagNames);
     _.difference(tagNames, tags.map(t => t.name)).forEach(newTagName => {
@@ -47,5 +47,4 @@ export default class Importter {
     });
     return realm.create('Phrase', params, true);
   }
-
 }
