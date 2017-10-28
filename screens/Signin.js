@@ -7,11 +7,15 @@
 import React from 'react';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
+import Importer from '../app/Importer';
+
 const _ = require('lodash');
 
-export default class Signin extends React.Component {
+class Signin extends React.Component {
 
-  render() {
+  constructor(props) {
+    super(props);
+
     GoogleSignin.hasPlayServices({ autoResolve: true })
     .then(() => {
     })
@@ -25,10 +29,13 @@ export default class Signin extends React.Component {
     })
     .then(() => {
     });
+  }
 
+  _signIn() {
     GoogleSignin.signIn()
     .then((user) => {
-      this.setState({ user: user });
+      console.log(user);
+      // this.setState({ user: user });
       var endpoint = 'https://sheets.googleapis.com/v4/spreadsheets';
       var sheetId = '15NvtH2b6UmzsH2WF0dh9ema8lPX7_E6XMVlecCtKbaE';
       fetch(`${endpoint}/${sheetId}/values/Sheet1!A2:Y999/?access_token=${user.accessToken}`)
@@ -43,15 +50,18 @@ export default class Signin extends React.Component {
       console.log('WRONG SIGNIN', err);
     })
     .done();
+  }
 
+  render() {
     return (
       <GoogleSigninButton
         style={{ width: 230, height: 48 }}
         size={GoogleSigninButton.Size.Standard}
-        color={GoogleSigninButton.Color.Dark} />
+        color={GoogleSigninButton.Color.Dark}
+        onPress={this._signIn.bind(this)} />
     );
   }
+
 }
 
-const styles = StyleSheet.create({
-})
+export default Signin;

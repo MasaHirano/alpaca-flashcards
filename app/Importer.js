@@ -4,7 +4,7 @@ import realm from './db/realm';
 
 const _ = require('lodash');
 
-export default class Importter {
+export default class Importer {
   constructor() {
   }
 

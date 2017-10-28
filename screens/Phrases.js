@@ -12,22 +12,30 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
-import realm from './app/db/realm';
-import Importer from './app/Importer';
+import realm from '../app/db/realm';
+import Importer from '../app/Importer';
 
 const _ = require('lodash');
 
-class HomeScreen extends React.Component {
+class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     return {
       title: "Today's English phrases",
-      headerRight: (
+      headerLeft: (
         <Icon.Button
           name='refresh'
           color='blue'
           backgroundColor='transparent'
           onPress={() => params.refreshPickups()}
+        />
+      ),
+      headerRight: (
+        <Icon.Button
+          name='cloud'
+          color='blue'
+          backgroundColor='transparent'
+          onPress={() => navigation.navigate('Signin')}
         />
       ),
     };
@@ -86,7 +94,6 @@ class HomeScreen extends React.Component {
         phrase.updatedAt = now;
       });
     });
-
     return pickupd;
   }
 
@@ -205,78 +212,6 @@ class HomeScreen extends React.Component {
   }
 }
 
-const SimpleApp = StackNavigator({
-  Home: { screen: HomeScreen }
-});
-
-export default class App extends React.Component {
-  // render() {
-  //   return <SimpleApp />;
-  // }
-  _signIn() {
-    // console.log('foo');
-  }
-
-  render() {
-    GoogleSignin.hasPlayServices({ autoResolve: true }).then(() => {
-      // play services are available. can now configure library
-    })
-    .catch((err) => {
-      console.log("Play services error", err.code, err.message);
-    });
-
-    GoogleSignin.configure({
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-      iosClientId: '208998088995-o9ki8qrtvjs3ac6cu4vaj3mefka8bhej.apps.googleusercontent.com', // only for iOS
-    })
-    .then(() => {
-      // you can now call currentUserAsync()
-      // console.log('foo');
-    });
-
-    GoogleSignin.signIn()
-    .then((user) => {
-      console.log(user);
-      // this.setState({ user: user });
-      var endpoint = 'https://sheets.googleapis.com/v4/spreadsheets';
-      var sheetId = '15NvtH2b6UmzsH2WF0dh9ema8lPX7_E6XMVlecCtKbaE';
-
-      fetch(`${endpoint}/${sheetId}/values/Sheet1!A2:Y999/?access_token=${user.accessToken}`)
-      .then((response) => {
-        response.json().then((data) => {
-          const importer = new Importer();
-          importer.import(data.values);
-        });
-      });
-
-      // const phraseSheetValues = realm.objects('Phrase').map(phrase => phrase.sheetValues);
-      // fetch(`${endpoint}/${sheetId}/values/Sheet1!A2:Y999/?access_token=${user.accessToken}&valueInputOption=USER_ENTERED`, {
-      //   method: 'PUT',
-      //   body: JSON.stringify({
-      //     values: phraseSheetValues,
-      //   })
-      // })
-      // .then((response) => {
-      //   response.json().then((data) => {
-      //       console.log(data);
-      //       // store.dispatch(nameGet(data.properties.title));
-      //   });
-      // });
-    })
-    .catch((err) => {
-      console.log('WRONG SIGNIN', err);
-    })
-    .done();
-
-    return (
-      <GoogleSigninButton
-        style={{ width: 230, height: 48 }}
-        size={GoogleSigninButton.Size.Standard}
-        color={GoogleSigninButton.Color.Dark} />
-    );
-  }
-}
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -329,3 +264,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 })
+
+export default Phrases;
