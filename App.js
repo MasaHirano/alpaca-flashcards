@@ -5,14 +5,40 @@
  */
 
 import React from 'react';
-import { StackNavigator } from 'react-navigation';
+import { StackNavigator, DrawerNavigator } from 'react-navigation';
+import { SideMenu, List, ListItem } from 'react-native-elements'
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Phrases from './screens/Phrases';
 import Signin from './screens/Signin';
 
+const Drawer = DrawerNavigator(
+  {
+    Phrases: {
+      screen: Phrases
+    },
+    Signin: {
+      screen: Signin
+    },
+  }
+);
+Drawer.navigationOptions = ({ navigation }) => {
+  return {
+    headerLeft: (
+      <Icon.Button
+        name='align-justify'
+        color='blue'
+        backgroundColor='transparent'
+        onPress={() => navigation.navigate('DrawerToggle')}
+      />
+    ),
+  }
+};
+
 const SimpleApp = StackNavigator({
-  Phrases: { screen: Phrases },
-  Signin: { screen: Signin },
+  Drawer: {
+    screen: Drawer,
+  },
 });
 
 export default class App extends React.Component {

@@ -5,24 +5,38 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import Swipeout from 'react-native-swipeout';
-import { StackNavigator } from 'react-navigation';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import { DrawerNavigator, NavigationActions } from 'react-navigation';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
 
+import { Drawer } from '../App';
+
 const _ = require('lodash');
+
+import Signin from './Signin';
+
+const DrawerButton = (props) => {
+  return (
+    <View>
+      <TouchableOpacity onPress={() => { props.navigation.navigate('DrawerOpen') }}>
+        <Icon.Button name='refresh' size={32} style={{paddingLeft: 10}}/>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     return {
       title: "Today's English phrases",
-      headerLeft: (
+      headerRight: (
         <Icon.Button
           name='refresh'
           color='blue'
@@ -30,35 +44,8 @@ class Phrases extends React.Component {
           onPress={() => params.refreshPickups()}
         />
       ),
-      headerRight: (
-        <Icon.Button
-          name='cloud'
-          color='blue'
-          backgroundColor='transparent'
-          onPress={() => navigation.navigate('Signin')}
-        />
-      ),
     };
   };
-
-  componentDidMount() {
-    this.props.navigation.setParams({
-      refreshPickups: this._refreshPickups.bind(this),
-    });
-  }
-
-  _refreshPickups() {
-    const now = new Date();
-    realm.write(() => {
-      this._pickupdPhrases.snapshot().forEach(phrase => {
-        phrase.pickupd = false;
-        phrase.updatedAt = now;
-      });
-    });
-    this.setState({
-      _data: this._pickupPhrases(),
-    });
-  }
 
   constructor(props) {
     super(props);
@@ -78,11 +65,63 @@ class Phrases extends React.Component {
       _data: phrases,
       modalVisible: false,
       selectedPhrase: {},
+      user: {},
     };
+  }
+
+  componentDidMount() {
+    this.props.navigation.setParams({
+      refreshPickups: this._refreshPickups.bind(this),
+    });
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <FlatList
+          data={this.state._data}
+          renderItem={this._renderItem.bind(this)}
+          keyExtractor={(item, index) => item.key}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+
+        <Modal
+          animationIn='fadeIn'
+          animationOut='fadeOut'
+          animationInTiming={100}
+          animationOutTiming={100}
+          isVisible={this.state.modalVisible}
+          onRequestClose={() => {}} >
+          <TouchableWithoutFeedback // This touchable closes modal.
+            onPress={() => { this._setModalVisible(false) }} >
+            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
+              <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }}>
+                <Text style={{ fontSize: 16, lineHeight: 28 }}>
+                  {this.state.selectedPhrase.sentence}
+                </Text>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </View>
+    );
   }
 
   get _pickupdPhrases() {
     return realm.objects('Phrase').filtered('pickupd = $0', true);
+  }
+
+  _refreshPickups() {
+    const now = new Date();
+    realm.write(() => {
+      this._pickupdPhrases.snapshot().forEach(phrase => {
+        phrase.pickupd = false;
+        phrase.updatedAt = now;
+      });
+    });
+    this.setState({
+      _data: this._pickupPhrases(),
+    });
   }
 
   _pickupPhrases() {
@@ -176,38 +215,6 @@ class Phrases extends React.Component {
           </View>
         </TouchableHighlight>
       </Swipeout>
-    );
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <FlatList
-          data={this.state._data}
-          renderItem={this._renderItem.bind(this)}
-          keyExtractor={(item, index) => item.key}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-
-        <Modal
-          animationIn='fadeIn'
-          animationOut='fadeOut'
-          animationInTiming={100}
-          animationOutTiming={100}
-          isVisible={this.state.modalVisible}
-          onRequestClose={() => {}} >
-          <TouchableWithoutFeedback // This touchable closes modal.
-            onPress={() => { this._setModalVisible(false) }} >
-            <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
-              <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }}>
-                <Text style={{ fontSize: 16, lineHeight: 28 }}>
-                  {this.state.selectedPhrase.sentence}
-                </Text>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      </View>
     );
   }
 }
