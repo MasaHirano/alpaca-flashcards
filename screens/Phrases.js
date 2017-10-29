@@ -5,17 +5,14 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
-import { DrawerNavigator, NavigationActions } from 'react-navigation';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
-
-import { Drawer } from '../App';
 
 const _ = require('lodash');
 
@@ -61,11 +58,18 @@ class Phrases extends React.Component {
     if (phrases.length == 0) {
       phrases = this._pickupPhrases();
     }
+
     this.state = {
       _data: phrases,
       modalVisible: false,
+      refreshing: false,
       selectedPhrase: {},
       user: {},
+      spreadsheet: {
+        id: null,
+        title: null,
+        lastSyncedAt: null,
+      },
     };
   }
 
@@ -73,6 +77,38 @@ class Phrases extends React.Component {
     this.props.navigation.setParams({
       refreshPickups: this._refreshPickups.bind(this),
     });
+
+    GoogleSignin.configure({
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive.readonly',
+      ],
+      iosClientId: '211779780353-kv9bthgjhqkqdd9e5sfd12e7sali0d95.apps.googleusercontent.com', // only for iOS
+    })
+    .then(() => {
+      GoogleSignin.currentUserAsync().then((user) => {
+        this.setState({ user });
+      }).done();
+    });
+
+    AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
+      const sheetInfo = _.fromPairs(stores);
+      this.setState({
+        spreadsheet: {
+          id: sheetInfo['GoogleSpreadsheet.id'],
+          title: sheetInfo['GoogleSpreadsheet.title'],
+          lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+        }
+      });
+    });
+
+    const sheetInfo = _.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']);
+    if (sheetInfo.every(_.negate(_.isEmpty))) {
+      const lastSyncedAt = new Date(this.state.spreadsheet.lastSyncedAt);
+      var recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
+
+      // Batch update to spreadsheet.
+    }
   }
 
   render() {
@@ -83,6 +119,12 @@ class Phrases extends React.Component {
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh.bind(this)}
+            />
+          }
         />
 
         <Modal
@@ -156,6 +198,13 @@ class Phrases extends React.Component {
   _showPhraseFor(phrase) {
     this.setState({ selectedPhrase: phrase });
     this._setModalVisible(true);
+  }
+
+  _onRefresh() {
+    this.setState({ refreshing: true });
+    fetchData().then(() => {
+      this.setState({ refreshing: false });
+    });
   }
 
   _renderTags(item) {

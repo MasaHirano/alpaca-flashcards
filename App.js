@@ -12,16 +12,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Phrases from './screens/Phrases';
 import Signin from './screens/Signin';
 
-const Drawer = DrawerNavigator(
-  {
-    Phrases: {
-      screen: Phrases
-    },
-    Signin: {
-      screen: Signin
-    },
-  }
-);
+const Drawer = DrawerNavigator({
+  Phrases: {
+    screen: Phrases
+  },
+  Signin: {
+    screen: Signin
+  },
+});
 Drawer.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: (
