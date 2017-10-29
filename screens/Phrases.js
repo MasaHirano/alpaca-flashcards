@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl, AsyncStorage } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
@@ -22,7 +22,7 @@ const DrawerButton = (props) => {
   return (
     <View>
       <TouchableOpacity onPress={() => { props.navigation.navigate('DrawerOpen') }}>
-        <Icon.Button name='refresh' size={32} style={{paddingLeft: 10}}/>
+        <Icon.Button name='refresh' size={32} style={{ paddingLeft: 10 }}/>
       </TouchableOpacity>
     </View>
   );
@@ -88,27 +88,26 @@ class Phrases extends React.Component {
     .then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
         this.setState({ user });
-      }).done();
+        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
+          const sheetInfo = _.fromPairs(stores);
+          this.setState({
+            spreadsheet: {
+              id: sheetInfo['GoogleSpreadsheet.id'],
+              title: sheetInfo['GoogleSpreadsheet.title'],
+              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+            }
+          });
+          if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
+            const lastSyncedAt = new Date(this.state.spreadsheet.lastSyncedAt);
+            var recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
+
+            // Batch update to spreadsheet.
+          }
+          console.log('Phrases#componentDidMount', this.state);
+        });
+      })
+      .done();
     });
-
-    AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
-      const sheetInfo = _.fromPairs(stores);
-      this.setState({
-        spreadsheet: {
-          id: sheetInfo['GoogleSpreadsheet.id'],
-          title: sheetInfo['GoogleSpreadsheet.title'],
-          lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-        }
-      });
-    });
-
-    const sheetInfo = _.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']);
-    if (sheetInfo.every(_.negate(_.isEmpty))) {
-      const lastSyncedAt = new Date(this.state.spreadsheet.lastSyncedAt);
-      var recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
-
-      // Batch update to spreadsheet.
-    }
   }
 
   render() {
@@ -202,8 +201,12 @@ class Phrases extends React.Component {
 
   _onRefresh() {
     this.setState({ refreshing: true });
-    fetchData().then(() => {
-      this.setState({ refreshing: false });
+    AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
+      if (! _.isEmpty(error)) {
+        console.log(error);
+      } else {
+        this.setState({ refreshing: false });
+      }
     });
   }
 

@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
+import { StyleSheet, View, Text, Picker, AsyncStorage } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
-import { StyleSheet, View, Text, Picker } from 'react-native';
 
 import Importer from '../app/Importer';
 import realm from '../app/db/realm';
@@ -48,9 +48,10 @@ class Signin extends React.Component {
 
   componentWillUnmount() {
     const keyValuePairs = [
-      ['GoogleSpreadsheet.Id', this.state.sheetId],
-      ['GoogleSpreadsheet.Title', this.state.sheetTab],
+      ['GoogleSpreadsheet.id', this.state.sheetId],
+      ['GoogleSpreadsheet.title', this.state.sheetTab],
     ];
+    console.log(keyValuePairs);
     AsyncStorage.multiSet(keyValuePairs, (errors) => {
       console.log('Error at Signin#componentWillUnmount', errors);
     });
@@ -66,6 +67,7 @@ class Signin extends React.Component {
             color={GoogleSigninButton.Color.Dark}
             onPress={this._signIn.bind(this)} />
         </View>
+
         <View>
           <Text>Select Sheet</Text>
           <Picker
@@ -83,6 +85,7 @@ class Signin extends React.Component {
             }
           </Picker>
         </View>
+
         <View>
           <Text>Select Sheet Tab</Text>
           <Picker
@@ -110,9 +113,7 @@ class Signin extends React.Component {
       var sheetId = '15NvtH2b6UmzsH2WF0dh9ema8lPX7_E6XMVlecCtKbaE';
 
       fetch(`${endpoint}/${sheetId}/values/Sheet1!A2:Y999`, {
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-        },
+        headers: { 'Authorization': `Bearer ${user.accessToken}` },
       })
       .then((response) => {
         response.json().then((data) => {
@@ -123,16 +124,15 @@ class Signin extends React.Component {
       });
 
       fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
-        headers: {
-          'Authorization': `Bearer ${user.accessToken}`,
-        },
+        headers: { 'Authorization': `Bearer ${user.accessToken}` },
       })
       .then((response) => {
         response.json().then((data) => {
           console.log(data);
           this.setState({ sheets: data.files });
-          // const importer = new Importer();
-          // importer.import(data.values);
+          if (_.isEmpty(this.state.sheetId)) {
+            this.setState({ sheetId: _.first(data.files).id });
+          }
         });
       });
     })
@@ -152,8 +152,9 @@ class Signin extends React.Component {
       response.json().then((data) => {
         console.log(data);
         this.setState({ innerSheets: data.sheets });
-        // const importer = new Importer();
-        // importer.import(data.values);
+        if (_.isEmpty(this.state.sheetTab)) {
+          this.setState({ sheetTab: _.first(data.sheets).properties.title });
+        }
       });
     });
   }
