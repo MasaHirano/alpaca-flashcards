@@ -13,6 +13,7 @@ import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
+import Config from '../app/config';
 
 const _ = require('lodash');
 
@@ -46,13 +47,6 @@ class Phrases extends React.Component {
 
   constructor(props) {
     super(props);
-    // realm.write(() => {
-    //   realm.objects('Phrase').snapshot().forEach(p => p.completedAt = null);
-    // });
-    // if (realm.objects('Phrase').length == 0) {
-    //   const importer = new Importer();
-    //   importer.import();
-    // }
 
     var phrases = this._pickupdPhrases.slice();
     if (phrases.length == 0) {
@@ -83,28 +77,52 @@ class Phrases extends React.Component {
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive.readonly',
       ],
-      iosClientId: '211779780353-kv9bthgjhqkqdd9e5sfd12e7sali0d95.apps.googleusercontent.com', // only for iOS
+      iosClientId: Config.googleSignin.iosClientId, // only for iOS
     })
     .then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
-        this.setState({ user });
-        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
-          const sheetInfo = _.fromPairs(stores);
-          this.setState({
-            spreadsheet: {
-              id: sheetInfo['GoogleSpreadsheet.id'],
-              title: sheetInfo['GoogleSpreadsheet.title'],
-              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+        console.log(user);
+        if (user != null) {
+          this.setState({ user });
+          AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
+            const sheetInfo = _.fromPairs(stores);
+            this.setState({
+              spreadsheet: {
+                id: sheetInfo['GoogleSpreadsheet.id'],
+                title: sheetInfo['GoogleSpreadsheet.title'],
+                lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+              }
+            });
+            if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
+              // Batch update to spreadsheet.
+              const endpoint = 'https://sheets.googleapis.com/v4/spreadsheets',
+                    { spreadsheet, user } = this.state,
+                    lastSyncedAt = new Date(spreadsheet.lastSyncedAt),
+                    recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
+
+              fetch(`${endpoint}/${spreadsheet.id}/values:batchUpdate`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${user.accessToken}` },
+                body: JSON.stringify({
+                  valueInputOption: 'USER_ENTERED',
+                  data: recentlyUpdated.map(phrase => {
+                    return {
+                      range: `${spreadsheet.title}!A${phrase.id + 1}:F${phrase.id + 1}`,
+                      majorDimension: 'ROWS',
+                      values: [phrase.sheetValues],
+                    };
+                  }),
+                }),
+              })
+              .then((response) => {
+                response.json().then((data) => {
+                  console.log('Phrases#componentDidMount', data);
+                });
+              });
             }
           });
-          if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
-            const lastSyncedAt = new Date(this.state.spreadsheet.lastSyncedAt);
-            var recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
-
-            // Batch update to spreadsheet.
-          }
-          console.log('Phrases#componentDidMount', this.state);
-        });
+        }
+        console.log('Phrases#componentDidMount', this.state);
       })
       .done();
     });
@@ -205,8 +223,24 @@ class Phrases extends React.Component {
       if (! _.isEmpty(error)) {
         console.log(error);
       } else {
+        this._fetchData();
         this.setState({ refreshing: false });
       }
+    });
+  }
+
+  _fetchData() {
+    const endpoint = 'https://sheets.googleapis.com/v4/spreadsheets',
+          { spreadsheet, user } = this.state;
+
+    fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
+      headers: { 'Authorization': `Bearer ${user.accessToken}` },
+    })
+    .then((response) => {
+      response.json().then((data) => {
+        const importer = new Importer();
+        importer.import(data.values);
+      });
     });
   }
 
