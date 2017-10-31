@@ -12,9 +12,11 @@ import Importer from '../app/Importer';
 import realm from '../app/db/realm';
 import Config from '../app/config';
 
+import SettingsList from './SettingsList';
+
 const _ = require('lodash');
 
-class Signin extends React.Component {
+export default class Signin extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -27,47 +29,42 @@ class Signin extends React.Component {
   }
 
   componentDidMount() {
-    GoogleSignin.hasPlayServices({ autoResolve: true })
-    .then()
+    GoogleSignin.hasPlayServices({ autoResolve: true }).then(() => {
+      // play services are available. can now configure library
+    })
     .catch((err) => {
       console.error("Play services error", err.code, err.message);
     });
 
-    GoogleSignin.configure({
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive.readonly',
-      ],
-      iosClientId: Config.googleSignin.iosClientId, // only for iOS
-    })
-    .then(() => {
+    GoogleSignin.configure(Config.googleSignin).then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
         this.setState(user);
       }).done();
     });
 
-    AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
+    AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title'], (err, stores) => {
       const sheetInfo = _.fromPairs(stores);
       this.setState({
         sheetId: sheetInfo['GoogleSpreadsheet.id'],
-        sheetTitle: sheetInfo['GoogleSpreadsheet.id'],
+        sheetTitle: sheetInfo['GoogleSpreadsheet.title'],
       });
+      console.log(this.state)
     });
   }
 
   componentWillUnmount() {
     // Save sheetId and sheetTitle to local storage.
-    const { sheetId, sheetTitle } = this.state;
-    const keyValuePairs = [
-      ['GoogleSpreadsheet.id', sheetId],
-      ['GoogleSpreadsheet.title', sheetTitle],
-    ];
-    console.log('Signin#componentWillUnmount', keyValuePairs);
-    AsyncStorage.multiSet(keyValuePairs, (errors) => {
-      if (! _.isEmpty(errors)) {
-        console.error('Signin#componentWillUnmount', errors);
-      }
-    });
+    // const { sheetId, sheetTitle } = this.state;
+    // const keyValuePairs = [
+    //   ['GoogleSpreadsheet.id', sheetId],
+    //   ['GoogleSpreadsheet.title', sheetTitle],
+    // ];
+    // console.log('Signin#componentWillUnmount', keyValuePairs);
+    // AsyncStorage.multiSet(keyValuePairs, (errors) => {
+    //   if (! _.isEmpty(errors)) {
+    //     console.error('Signin#componentWillUnmount', errors);
+    //   }
+    // });
   }
 
   render() {
@@ -75,43 +72,17 @@ class Signin extends React.Component {
       <View style={styles.navBar}>
         <View style={{ marginTop: 10 }}>
           <GoogleSigninButton
-            style={{ width: 230, height: 48 }}
-            size={GoogleSigninButton.Size.Standard}
+            style={{ width: 312, height: 48 }}
+            size={GoogleSigninButton.Size.Wide}
             color={GoogleSigninButton.Color.Dark}
             onPress={this._signIn.bind(this)} />
         </View>
 
         <View>
-          <Text>Select Sheet</Text>
-          <Picker
-            style={{ width: 100 }}
-            selectedValue={this.state.sheetId}
-            onValueChange={(itemValue, itemIndex) => {
-              this.setState({ sheetId: itemValue });
-              this._describeSheet(itemValue);
-            }}
+          <SettingsList
+            navigation={this.props.navigation}
           >
-            {
-              this.state.sheets.map((sheet, index) => {
-                return <Picker.Item key={index} label={sheet.name} value={sheet.id} />
-              })
-            }
-          </Picker>
-        </View>
-
-        <View>
-          <Text>Select Sheet Tab</Text>
-          <Picker
-            style={{ width: 100 }}
-            selectedValue={this.state.sheetTitle}
-            onValueChange={(itemValue, itemIndex) => this.setState({ sheetTitle: itemValue })}
-          >
-            {
-              this.state.innerSheets.map((sheet, index) => {
-                return <Picker.Item key={index} label={sheet.properties.title} value={sheet.properties.title} />
-              })
-            }
-          </Picker>
+          </SettingsList>
         </View>
       </View>
     );
@@ -123,18 +94,22 @@ class Signin extends React.Component {
       console.log('Signin#_signIn', user);
       this.setState({ user });
 
-      fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
-        headers: { 'Authorization': `Bearer ${user.accessToken}` },
-      })
-      .then((response) => {
-        response.json().then((data) => {
-          console.log('Signin#_signIn', data);
-          this.setState({ sheets: data.files });
-          if (_.isEmpty(this.state.sheetId)) {
-            this.setState({ sheetId: _.first(data.files).id });
-          }
-        });
-      });
+      // fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
+      //   headers: { 'Authorization': `Bearer ${user.accessToken}` },
+      // })
+      // .then((response) => {
+      //   response.json().then((data) => {
+      //     console.log('Signin#_signIn', data);
+      //     this.setState({ sheets: data.files });
+      //     if (_.isEmpty(this.state.sheetId)) {
+      //       this.setState({
+      //         sheetId: _.first(data.files).id,
+      //         sheetTitle: null,
+      //       });
+      //       this._describeSheet(sheetId);
+      //     }
+      //   });
+      // });
     })
     .catch((err) => {
       console.error('WRONG SIGNIN', err);
@@ -142,28 +117,27 @@ class Signin extends React.Component {
     .done();
   }
 
-  _describeSheet(sheetId) {
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?includeGridData=false`, {
-      headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
-    })
-    .then((response) => {
-      response.json().then((data) => {
-        console.log('Signin#_describeSheet', data);
-        this.setState({ innerSheets: data.sheets });
-        if (_.isEmpty(this.state.sheetTitle)) {
-          this.setState({ sheetTitle: _.first(data.sheets).properties.title });
-        }
-      });
-    });
-  }
+  // _describeSheet(sheetId) {
+  //   fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?includeGridData=false`, {
+  //     headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
+  //   })
+  //   .then((response) => {
+  //     response.json().then((data) => {
+  //       console.log('Signin#_describeSheet', data);
+  //       this.setState({
+  //         innerSheets: data.sheets,
+  //         sheetTitle: _.first(data.sheets).properties.title,
+  //       });
+  //     });
+  //   });
+  // }
 }
 
 const styles = StyleSheet.create({
   navBar: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    // flexDirection: 'column',
+    flex: 1,
+    // justifyContent: 'space-between',
+    // alignItems: 'center',
   },
 })
-
-export default Signin;

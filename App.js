@@ -11,6 +11,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Phrases from './screens/Phrases';
 import Signin from './screens/Signin';
+import SettingsList from './screens/SettingsList';
+import SettingsListChild from './screens/SettingsListChild';
 
 const Drawer = DrawerNavigator({
   Phrases: {
@@ -36,6 +38,12 @@ Drawer.navigationOptions = ({ navigation }) => {
 const SimpleApp = StackNavigator({
   Drawer: {
     screen: Drawer,
+  },
+  SettingsList: {
+    screen: SettingsList,
+  },
+  SettingsListChild: {
+    screen: SettingsListChild,
   },
 });
 

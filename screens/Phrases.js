@@ -19,17 +19,7 @@ const _ = require('lodash');
 
 import Signin from './Signin';
 
-const DrawerButton = (props) => {
-  return (
-    <View>
-      <TouchableOpacity onPress={() => { props.navigation.navigate('DrawerOpen') }}>
-        <Icon.Button name='refresh' size={32} style={{ paddingLeft: 10 }}/>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-class Phrases extends React.Component {
+export default class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     return {
@@ -72,14 +62,7 @@ class Phrases extends React.Component {
       refreshPickups: this._refreshPickups.bind(this),
     });
 
-    GoogleSignin.configure({
-      scopes: [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive.readonly',
-      ],
-      iosClientId: Config.googleSignin.iosClientId, // only for iOS
-    })
-    .then(() => {
+    GoogleSignin.configure(Config.googleSignin).then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
         console.log(user);
         if (user != null) {
@@ -95,10 +78,10 @@ class Phrases extends React.Component {
             });
             if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
               // Batch update to spreadsheet.
-              const endpoint = 'https://sheets.googleapis.com/v4/spreadsheets',
+              const endpoint = Config.googleAPI.sheetsEndpoint,
                     { spreadsheet, user } = this.state,
-                    lastSyncedAt = new Date(spreadsheet.lastSyncedAt),
-                    recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
+                    lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
+              const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
 
               fetch(`${endpoint}/${spreadsheet.id}/values:batchUpdate`, {
                 method: 'POST',
@@ -120,9 +103,9 @@ class Phrases extends React.Component {
                 });
               });
             }
+            console.log('Phrases#componentDidMount', this.state);
           });
         }
-        console.log('Phrases#componentDidMount', this.state);
       })
       .done();
     });
@@ -357,5 +340,3 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
 })
-
-export default Phrases;
