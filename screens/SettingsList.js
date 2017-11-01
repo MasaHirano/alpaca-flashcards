@@ -42,6 +42,17 @@ export default class SettingsList extends React.Component {
     });
   }
 
+  _onPress({ item, index }) {
+    this.props.navigation.navigate('SettingsListChild', {
+      type: item.key,
+      onSelect: (data) => {
+        console.log('onSelect has runned', data);
+        this.setState(data);
+      },
+      spreadsheet: this.state.spreadsheet,
+    });
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -56,7 +67,7 @@ export default class SettingsList extends React.Component {
   }
 
   _renderItem({ item, index }) {
-    const { navigate } = this.props.navigation;
+    const { navigation } = this.props;
     if (item.key == 'sheetId') {
       var selectedItem = this.state.spreadsheet.name;
     } else if (item.key == 'sheetTitle') {
@@ -65,7 +76,7 @@ export default class SettingsList extends React.Component {
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
-        onPress={() => { navigate('SettingsListChild', { type: item.key }) }} >
+        onPress={() => this._onPress({ item, index })} >
         <View style={styles.phraseView}>
           <Text>
             {item.name}: {selectedItem}

@@ -28,14 +28,10 @@ export default class SettingsListChild extends React.Component {
         this.setState({ user });
         AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title'], (err, stores) => {
           const sheetInfo = _.fromPairs(stores);
-          // this.setState({
-          //   sheetId: sheetInfo['GoogleSpreadsheet.id'],
-          //   sheetTitle: sheetInfo['GoogleSpreadsheet.title'],
-          // });
-          if (this.props.navigation.state.params.type == 'sheetId') {
+          if (this.props.navigation.state.params.type === 'sheetId') {
             this.setState({ selectedItem: sheetInfo['GoogleSpreadsheet.id'] });
             this._fetchSheets();
-          } else if (this.props.navigation.state.params.type == 'sheetTitle') {
+          } else if (this.props.navigation.state.params.type === 'sheetTitle') {
             this.setState({
               sheetId: sheetInfo['GoogleSpreadsheet.id'],
               selectedItem: sheetInfo['GoogleSpreadsheet.title'],
@@ -61,7 +57,6 @@ export default class SettingsListChild extends React.Component {
   }
 
   _fetchSheets() {
-    console.log(this);
     fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
       headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
     })
@@ -92,16 +87,21 @@ export default class SettingsListChild extends React.Component {
   }
 
   _saveSelectedData({ item, index }) {
-    if (this.props.navigation.state.params.type == 'sheetId') {
-      console.log(item);
-      var keyValuePairs = [
+    const { navigation } = this.props,
+          { type, onSelect, spreadsheet } = navigation.state.params;
+    const selectedItem = {},
+          keyValuePairs = [];
+    console.log('SettingsListChild#_saveSelectedData', item);
+    if ((type === 'sheetId') && (item.id !== spreadsheet.id)) {
+      keyValuePairs.push(
         ['GoogleSpreadsheet.id', item.id],
         ['GoogleSpreadsheet.name', item.name],
-      ];
-    } else if (this.props.navigation.state.params.type == 'sheetTitle') {
-      var keyValuePairs = [
-        ['GoogleSpreadsheet.title', item.properties.title],
-      ];
+        ['GoogleSpreadsheet.title', ''],
+      );
+      _.assign(selectedItem, { id: item.id, name: item.name, title: null });
+    } else if ((type === 'sheetTitle') && (item.properties.title !== spreadsheet.title)) {
+      keyValuePairs.push(['GoogleSpreadsheet.title', item.properties.title]);
+      _.assign(selectedItem, { title: item.properties.title });
     }
     // Save sheetId and sheetTitle to local storage.
     AsyncStorage.multiSet(keyValuePairs, (errors) => {
@@ -109,13 +109,14 @@ export default class SettingsListChild extends React.Component {
         console.error('Signin#componentWillUnmount', errors);
       }
     });
-    this.props.navigation.goBack();
+    navigation.goBack();
+    onSelect(_.merge(spreadsheet, selectedItem));
   }
 
   _renderItem({ item, index }) {
-    if (this.props.navigation.state.params.type == 'sheetId') {
+    if (this.props.navigation.state.params.type === 'sheetId') {
       var text = item.name;
-    } else if (this.props.navigation.state.params.type == 'sheetTitle') {
+    } else if (this.props.navigation.state.params.type === 'sheetTitle') {
       var text = item.properties.title;
     }
     return (

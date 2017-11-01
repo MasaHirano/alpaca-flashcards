@@ -39,7 +39,7 @@ export default class Phrases extends React.Component {
     super(props);
 
     var phrases = this._pickupdPhrases.slice();
-    if (phrases.length == 0) {
+    if (phrases.length === 0) {
       phrases = this._pickupPhrases();
     }
 
@@ -64,8 +64,8 @@ export default class Phrases extends React.Component {
 
     GoogleSignin.configure(Config.googleSignin).then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
-        console.log(user);
-        if (user != null) {
+        console.log('Phrases#componentDidMount', user);
+        if (user !== null) {
           this.setState({ user });
           AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
             const sheetInfo = _.fromPairs(stores);
@@ -213,7 +213,7 @@ export default class Phrases extends React.Component {
   }
 
   _fetchData() {
-    const endpoint = 'https://sheets.googleapis.com/v4/spreadsheets',
+    const endpoint = Config.googleAPI.sheetsEndpoint,
           { spreadsheet, user } = this.state;
 
     fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
