@@ -206,13 +206,16 @@ export default class Phrases extends React.Component {
       if (! _.isEmpty(error)) {
         console.log(error);
       } else {
-        this._fetchData();
-        this.setState({ refreshing: false });
+        this._importData();
+        this.setState({
+          refreshing: false,
+          _data: this._pickupPhrases(),
+        });
       }
     });
   }
 
-  _fetchData() {
+  _importData() {
     const endpoint = Config.googleAPI.sheetsEndpoint,
           { spreadsheet, user } = this.state;
 
