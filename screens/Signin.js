@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, Picker, AsyncStorage, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, Text, Picker, AsyncStorage, TouchableOpacity } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
 import Importer from '../app/Importer';
@@ -70,7 +70,7 @@ export default class Signin extends React.Component {
           </SettingsList>
         </View>
 
-        <TouchableWithoutFeedback
+        <TouchableOpacity
           onPress={this._signOut.bind(this)}
         >
           <View
@@ -85,7 +85,7 @@ export default class Signin extends React.Component {
               <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign out from Google</Text>
             </View>
           </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
       </View>
     );
   }
