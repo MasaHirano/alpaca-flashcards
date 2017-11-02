@@ -68,9 +68,9 @@ export default class SettingsList extends React.Component {
 
   _renderItem({ item, index }) {
     const { navigation } = this.props;
-    if (item.key == 'sheetId') {
+    if (item.key === 'sheetId') {
       var selectedItem = this.state.spreadsheet.name;
-    } else if (item.key == 'sheetTitle') {
+    } else if (item.key === 'sheetTitle') {
       var selectedItem = this.state.spreadsheet.title;
     }
     return (

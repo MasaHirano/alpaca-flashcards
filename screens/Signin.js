@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, Picker, AsyncStorage } from 'react-native';
+import { StyleSheet, View, Text, Picker, AsyncStorage, TouchableOpacity } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
 import Importer from '../app/Importer';
@@ -20,11 +20,11 @@ export default class Signin extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      sheets: [],
-      innerSheets: [],
-      user: {},
-      sheetId: null,
-      sheetTitle: null,
+      sheets: [],        // List of spreadsheets
+      innerSheets: [],   // List of titles in a spreadsheet
+      user: {},          // Google user objects
+      sheetId: null,     // Active sheeetId
+      sheetTitle: null,  // Active sheetTitle
     };
   }
 
@@ -52,21 +52,6 @@ export default class Signin extends React.Component {
     });
   }
 
-  componentWillUnmount() {
-    // Save sheetId and sheetTitle to local storage.
-    // const { sheetId, sheetTitle } = this.state;
-    // const keyValuePairs = [
-    //   ['GoogleSpreadsheet.id', sheetId],
-    //   ['GoogleSpreadsheet.title', sheetTitle],
-    // ];
-    // console.log('Signin#componentWillUnmount', keyValuePairs);
-    // AsyncStorage.multiSet(keyValuePairs, (errors) => {
-    //   if (! _.isEmpty(errors)) {
-    //     console.error('Signin#componentWillUnmount', errors);
-    //   }
-    // });
-  }
-
   render() {
     return (
       <View style={styles.navBar}>
@@ -84,6 +69,23 @@ export default class Signin extends React.Component {
           >
           </SettingsList>
         </View>
+
+        <TouchableOpacity
+          onPress={this._signOut.bind(this)}
+        >
+          <View
+            style={{ marginTop: 10, display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+            onPress={() => { console.log('signOut was tapped') }}
+          >
+            <GoogleSigninButton
+              style={{ width: 48, height: 48 }}
+              size={GoogleSigninButton.Size.Wide}
+              color={GoogleSigninButton.Color.Dark} />
+            <View style={{ height: 41, backgroundColor: 'lightcoral', justifyContent: 'center', width: 265, marginLeft: -5, paddingLeft: 10 }} >
+              <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign out from Google</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -93,23 +95,6 @@ export default class Signin extends React.Component {
     .then((user) => {
       console.log('Signin#_signIn', user);
       this.setState({ user });
-
-      // fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
-      //   headers: { 'Authorization': `Bearer ${user.accessToken}` },
-      // })
-      // .then((response) => {
-      //   response.json().then((data) => {
-      //     console.log('Signin#_signIn', data);
-      //     this.setState({ sheets: data.files });
-      //     if (_.isEmpty(this.state.sheetId)) {
-      //       this.setState({
-      //         sheetId: _.first(data.files).id,
-      //         sheetTitle: null,
-      //       });
-      //       this._describeSheet(sheetId);
-      //     }
-      //   });
-      // });
     })
     .catch((err) => {
       console.error('WRONG SIGNIN', err);
@@ -117,27 +102,32 @@ export default class Signin extends React.Component {
     .done();
   }
 
-  // _describeSheet(sheetId) {
-  //   fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?includeGridData=false`, {
-  //     headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
-  //   })
-  //   .then((response) => {
-  //     response.json().then((data) => {
-  //       console.log('Signin#_describeSheet', data);
-  //       this.setState({
-  //         innerSheets: data.sheets,
-  //         sheetTitle: _.first(data.sheets).properties.title,
-  //       });
-  //     });
-  //   });
-  // }
+  _signOut() {
+    GoogleSignin.signOut()
+    .then(() => {
+      var keyValuePairs = [
+        ['GoogleSpreadsheet.id', ''],
+        ['GoogleSpreadsheet.name', ''],
+        ['GoogleSpreadsheet.title', ''],
+      ];
+      AsyncStorage.multiSet(keyValuePairs, (errors) => {
+        if (! _.isEmpty(errors)) {
+          console.error('Signin#_signOut', errors);
+        }
+      });
+      this.setState({ sheetId: null, sheetTitle: null });
+      // SettingsList.setState({
+      //   spreadsheet: { id: null, name: null, title: null },
+      // });
+    })
+    .catch((err) => {
+      console.error('Signin#_signOut', err);
+    });
+  }
 }
 
 const styles = StyleSheet.create({
   navBar: {
-    // flexDirection: 'column',
     flex: 1,
-    // justifyContent: 'space-between',
-    // alignItems: 'center',
   },
 })
