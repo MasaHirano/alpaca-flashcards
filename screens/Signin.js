@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, Picker, AsyncStorage, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, AsyncStorage, TouchableOpacity } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
 import Importer from '../app/Importer';
@@ -65,18 +65,14 @@ export default class Signin extends React.Component {
 
         <View>
           <SettingsList
-            navigation={this.props.navigation}
-          >
-          </SettingsList>
+            navigation={this.props.navigation} />
         </View>
 
         <TouchableOpacity
-          onPress={this._signOut.bind(this)}
-        >
+          onPress={this._signOut.bind(this)} >
           <View
             style={{ marginTop: 10, display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-            onPress={() => { console.log('signOut was tapped') }}
-          >
+            onPress={() => { console.log('signOut was tapped') }} >
             <GoogleSigninButton
               style={{ width: 48, height: 48 }}
               size={GoogleSigninButton.Size.Wide}

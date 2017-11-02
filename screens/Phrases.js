@@ -5,11 +5,11 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl, AsyncStorage } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, TouchableWithoutFeedback, RefreshControl, AsyncStorage } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
-import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import { GoogleSignin } from 'react-native-google-signin';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
@@ -260,13 +260,13 @@ export default class Phrases extends React.Component {
       <Swipeout
         right={swipeBtns}
         autoClose={true}
-        backgroundColor='transparent'>
+        backgroundColor='transparent' >
         <TouchableHighlight
           underlayColor='rgba(192,192,192,1)'
           onPress={() => { this._showPhraseFor(item) }} >
-          <View style={[styles.phraseView, item.isCompleted() && styles.phraseDoneView]}>
-            <View style={styles.phraseSentenceView}>
-              <View style={styles.phraseSentenceBodyView}>
+          <View style={[styles.phraseView, item.isCompleted() && styles.phraseDoneView]} >
+            <View style={styles.phraseSentenceView} >
+              <View style={styles.phraseSentenceBodyView} >
                 <Text
                   style={styles.phraseText}
                   ellipsizeMode='tail'
@@ -274,14 +274,14 @@ export default class Phrases extends React.Component {
                   {item.key}
                 </Text>
               </View>
-              <View style={styles.phraseSentenceAppendixView}>
+              <View style={styles.phraseSentenceAppendixView} >
                 <Text style={[styles.phraseText, styles.phraseSentenceAppendixText]} >
                   >
                 </Text>
               </View>
             </View>
             {this._renderTags(item)}
-            <Text style={styles.phraseCreatedAtText}>
+            <Text style={styles.phraseCreatedAtText} >
               {item.createdAt.toLocaleString('en-US')}
             </Text>
           </View>

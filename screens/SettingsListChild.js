@@ -1,6 +1,6 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl, AsyncStorage } from 'react-native';
-import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
+import { GoogleSignin } from 'react-native-google-signin';
 
 import Config from '../app/config';
 
@@ -91,6 +91,7 @@ export default class SettingsListChild extends React.Component {
           { type, onSelect, spreadsheet } = navigation.state.params;
     const selectedItem = {},
           keyValuePairs = [];
+
     console.log('SettingsListChild#_saveSelectedData', item);
     if ((type === 'sheetId') && (item.id !== spreadsheet.id)) {
       keyValuePairs.push(
@@ -123,7 +124,7 @@ export default class SettingsListChild extends React.Component {
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
         onPress={() => { this._saveSelectedData({ item, index }) }} >
-        <View style={styles.phraseView}>
+        <View style={styles.phraseView} >
           <Text>
             {text}
           </Text>
@@ -135,10 +136,8 @@ export default class SettingsListChild extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     backgroundColor: '#fff',
     justifyContent: 'center',
-    // marginTop: 10,
   },
   separator: {
     height: 1,

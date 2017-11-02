@@ -1,6 +1,6 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Button, TouchableWithoutFeedback, TouchableOpacity, RefreshControl, AsyncStorage } from 'react-native';
-import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
+import { GoogleSignin } from 'react-native-google-signin';
 
 import Config from '../app/config';
 
@@ -55,7 +55,7 @@ export default class SettingsList extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} >
         <FlatList
           data={this.state.data}
           renderItem={this._renderItem.bind(this)}
@@ -77,7 +77,7 @@ export default class SettingsList extends React.Component {
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
         onPress={() => this._onPress({ item, index })} >
-        <View style={styles.phraseView}>
+        <View style={styles.phraseView} >
           <Text>
             {item.name}: {selectedItem}
           </Text>
