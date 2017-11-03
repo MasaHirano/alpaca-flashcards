@@ -17,8 +17,6 @@ import Config from '../app/config';
 
 const _ = require('lodash');
 
-import Signin from './Signin';
-
 export default class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
@@ -65,47 +63,48 @@ export default class Phrases extends React.Component {
     GoogleSignin.configure(Config.googleSignin).then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
         console.log('Phrases#componentDidMount', user);
-        if (user !== null) {
-          this.setState({ user });
-          AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
-            const sheetInfo = _.fromPairs(stores);
-            this.setState({
-              spreadsheet: {
-                id: sheetInfo['GoogleSpreadsheet.id'],
-                title: sheetInfo['GoogleSpreadsheet.title'],
-                lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-              }
-            });
-            if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
-              // Batch update to spreadsheet.
-              const endpoint = Config.googleAPI.sheetsEndpoint,
-                    { spreadsheet, user } = this.state,
-                    lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
-              const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
-
-              fetch(`${endpoint}/${spreadsheet.id}/values:batchUpdate`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${user.accessToken}` },
-                body: JSON.stringify({
-                  valueInputOption: 'USER_ENTERED',
-                  data: recentlyUpdated.map(phrase => {
-                    return {
-                      range: `${spreadsheet.title}!A${phrase.id + 1}:F${phrase.id + 1}`,
-                      majorDimension: 'ROWS',
-                      values: [phrase.sheetValues],
-                    };
-                  }),
-                }),
-              })
-              .then((response) => {
-                response.json().then((data) => {
-                  console.log('Phrases#componentDidMount', data);
-                });
-              });
-            }
-            console.log('Phrases#componentDidMount', this.state);
-          });
+        if (user === null) {
+          return;
         }
+        this.setState({ user });
+        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
+          const sheetInfo = _.fromPairs(stores);
+          this.setState({
+            spreadsheet: {
+              id: sheetInfo['GoogleSpreadsheet.id'],
+              title: sheetInfo['GoogleSpreadsheet.title'],
+              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+            },
+          });
+          if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
+            // Batch update to spreadsheet.
+            const endpoint = Config.googleAPI.sheetsEndpoint,
+                  { spreadsheet, user } = this.state,
+                  lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
+            const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
+
+            fetch(`${endpoint}/${spreadsheet.id}/values:batchUpdate`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${user.accessToken}` },
+              body: JSON.stringify({
+                valueInputOption: 'USER_ENTERED',
+                data: recentlyUpdated.map(phrase => {
+                  return {
+                    range: `${spreadsheet.title}!A${phrase.id + 1}:F${phrase.id + 1}`,
+                    majorDimension: 'ROWS',
+                    values: [phrase.sheetValues],
+                  };
+                }),
+              }),
+            })
+            .then((response) => {
+              response.json().then((data) => {
+                console.log('Phrases#componentDidMount', data);
+              });
+            });
+          }
+          console.log('Phrases#componentDidMount', this.state);
+        });
       })
       .done();
     });
@@ -113,7 +112,7 @@ export default class Phrases extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} >
         <FlatList
           data={this.state._data}
           renderItem={this._renderItem.bind(this)}
@@ -137,8 +136,8 @@ export default class Phrases extends React.Component {
           <TouchableWithoutFeedback // This touchable closes modal.
             onPress={() => { this._setModalVisible(false) }} >
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
-              <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }}>
-                <Text style={{ fontSize: 16, lineHeight: 28 }}>
+              <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }} >
+                <Text style={{ fontSize: 16, lineHeight: 28 }} >
                   {this.state.selectedPhrase.sentence}
                 </Text>
               </View>
@@ -178,7 +177,7 @@ export default class Phrases extends React.Component {
     return pickupd;
   }
 
-  _completePhrase(item, index) {
+  _completePhrase({ item, index }) {
     // Update phrase's status.
     const now = new Date();
     realm.write(() => {
@@ -204,15 +203,10 @@ export default class Phrases extends React.Component {
     this.setState({ refreshing: true });
     AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
       if (! _.isEmpty(error)) {
-        console.log(error);
-      } else {
-        this._importData();
-        this.setState({
-          refreshing: false,
-          _data: this._pickupPhrases(),
-        });
+        console.error(error);
       }
     });
+    this._importData();
   }
 
   _importData() {
@@ -226,26 +220,24 @@ export default class Phrases extends React.Component {
       response.json().then((data) => {
         const importer = new Importer();
         importer.import(data.values);
+        this.setState({
+          refreshing: false,
+          _data: this._pickupPhrases(),
+        });
       });
     });
   }
 
   _renderTags(item) {
-    return (
-      <View style={styles.tagView}>
-        {
-          item.tags.map((tag, index) => {
-            return (
-              <View style={styles.tagInnerView} key={index}>
-                <Text style={styles.tagText}>
-                  #{tag.name}
-                </Text>
-              </View>
-            );
-          })
-        }
-      </View>
-    );
+    return item.tags.map((tag, index) => {
+      return (
+        <View style={styles.tagInnerView} key={index} >
+          <Text style={styles.tagText} >
+            #{tag.name}
+          </Text>
+        </View>
+      );
+    });
   }
 
   _renderItem({ item, index }) {
@@ -253,7 +245,7 @@ export default class Phrases extends React.Component {
       text: (item.isCompleted()) ? 'Revert' : 'Complete',
       backgroundColor: 'blue',
       underlayColor: 'rgba(0,0,0,1)',
-      onPress: () => { this._completePhrase(item, index) }
+      onPress: () => { this._completePhrase({ item, index }) },
     }];
 
     return (
@@ -275,12 +267,15 @@ export default class Phrases extends React.Component {
                 </Text>
               </View>
               <View style={styles.phraseSentenceAppendixView} >
-                <Text style={[styles.phraseText, styles.phraseSentenceAppendixText]} >
-                  >
-                </Text>
+                <Icon
+                  style={styles.phraseSentenceAppendixText}
+                  name='angle-right'
+                />
               </View>
             </View>
-            {this._renderTags(item)}
+            <View style={styles.tagView} >
+              {this._renderTags(item)}
+            </View>
             <Text style={styles.phraseCreatedAtText} >
               {item.createdAt.toLocaleString('en-US')}
             </Text>
@@ -329,6 +324,8 @@ const styles = StyleSheet.create({
   phraseSentenceAppendixText: {
     textAlign: 'right',
     color: 'lightgray',
+    paddingTop: 3,
+    fontSize: 18,
   },
   tagView: {
     flexDirection: 'row',

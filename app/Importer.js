@@ -5,18 +5,15 @@ import realm from './db/realm';
 const _ = require('lodash');
 
 export default class Importer {
-  constructor() {
-  }
-
   import(rows) {
     const keys = ['id', 'sentence', 'tags', 'completedAt', 'createdAt', 'updatedAt'];
-    for (let row of rows) {
+    rows.forEach(row => {
       const phraseRow = _.zipObject(keys, row);
       realm.write(() => {
         const tags = this._saveTags(phraseRow);
         this._savePhrase(phraseRow, tags);
       });
-    }
+    });
   }
 
   _calculateNextIdOf(model) {
