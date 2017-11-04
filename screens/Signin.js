@@ -5,11 +5,9 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, Text, Picker, AsyncStorage, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, AsyncStorage, TouchableOpacity } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
 
-import Importer from '../app/Importer';
-import realm from '../app/db/realm';
 import Config from '../app/config';
 
 import SettingsList from './SettingsList';
@@ -54,35 +52,34 @@ export default class Signin extends React.Component {
 
   render() {
     return (
-      <View style={styles.navBar}>
-        <View style={{ marginTop: 10 }}>
+      <View style={styles.navBar} >
+        <View style={{ marginTop: 10 }} >
           <GoogleSigninButton
             style={{ width: 312, height: 48 }}
             size={GoogleSigninButton.Size.Wide}
             color={GoogleSigninButton.Color.Dark}
-            onPress={this._signIn.bind(this)} />
+            onPress={this._signIn.bind(this)}
+          />
         </View>
 
         <View>
           <SettingsList
             navigation={this.props.navigation}
-          >
-          </SettingsList>
+          />
         </View>
 
         <TouchableOpacity
-          onPress={this._signOut.bind(this)}
-        >
+          onPress={this._signOut.bind(this)} >
           <View
             style={{ marginTop: 10, display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-            onPress={() => { console.log('signOut was tapped') }}
-          >
+            onPress={() => { console.log('signOut was tapped') }} >
             <GoogleSigninButton
               style={{ width: 48, height: 48 }}
               size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Dark} />
+              color={GoogleSigninButton.Color.Dark}
+            />
             <View style={{ height: 41, backgroundColor: 'lightcoral', justifyContent: 'center', width: 265, marginLeft: -5, paddingLeft: 10 }} >
-              <Text style={{ color: 'white', fontWeight: 'bold' }}>Sign out from Google</Text>
+              <Text style={{ color: 'white', fontWeight: 'bold' }} >Sign out from Google</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -116,9 +113,6 @@ export default class Signin extends React.Component {
         }
       });
       this.setState({ sheetId: null, sheetTitle: null });
-      // SettingsList.setState({
-      //   spreadsheet: { id: null, name: null, title: null },
-      // });
     })
     .catch((err) => {
       console.error('Signin#_signOut', err);
