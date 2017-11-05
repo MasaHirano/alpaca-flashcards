@@ -36,7 +36,7 @@ export default class Signin extends React.Component {
 
     GoogleSignin.configure(Config.googleSignin).then(() => {
       GoogleSignin.currentUserAsync().then((user) => {
-        this.setState(user);
+        this.setState({ user });
       }).done();
     });
 
@@ -50,6 +50,15 @@ export default class Signin extends React.Component {
     });
   }
 
+  get _loggedInMessage() {
+    const { user } = this.state;
+    if (! _.isEmpty(user)) {
+      return `Signed in as ${user.email}`;
+    } else {
+      return 'Not sign in yet';
+    }
+  }
+
   render() {
     return (
       <View style={styles.navBar} >
@@ -60,6 +69,9 @@ export default class Signin extends React.Component {
             color={GoogleSigninButton.Color.Dark}
             onPress={this._signIn.bind(this)}
           />
+          <Text style={{ color: 'dimgray' }} >
+            {this._loggedInMessage}
+          </Text>
         </View>
 
         <View>
@@ -112,7 +124,7 @@ export default class Signin extends React.Component {
           console.error('Signin#_signOut', errors);
         }
       });
-      this.setState({ sheetId: null, sheetTitle: null });
+      this.setState({ user: {}, sheetId: null, sheetTitle: null });
     })
     .catch((err) => {
       console.error('Signin#_signOut', err);
