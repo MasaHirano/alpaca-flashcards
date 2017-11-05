@@ -69,7 +69,7 @@ export default class Signin extends React.Component {
             color={GoogleSigninButton.Color.Dark}
             onPress={this._signIn.bind(this)}
           />
-          <Text style={{ color: 'dimgray' }} >
+          <Text style={{ color: 'dimgray', paddingLeft: 5 }} >
             {this._loggedInMessage}
           </Text>
         </View>
