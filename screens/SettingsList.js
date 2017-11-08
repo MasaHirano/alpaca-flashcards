@@ -1,6 +1,7 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
 import { GoogleSignin } from 'react-native-google-signin';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Config from '../app/config';
 
@@ -78,9 +79,18 @@ export default class SettingsList extends React.Component {
         underlayColor='rgba(192,192,192,1)'
         onPress={() => this._onPress({ item, index })} >
         <View style={styles.phraseView} >
-          <Text>
-            {item.name}: {selectedItem}
-          </Text>
+          <View style={{ width: '95%', justifyContent: 'center' }} >
+            <Text>
+              {item.name}: {selectedItem}
+            </Text>
+          </View>
+          <View style={{ width: '5%', justifyContent: 'center' }} >
+            <Icon
+              style={{ textAlign: 'right', color: 'lightgray' }}
+              name='angle-right'
+              size={16}
+            />
+          </View>
         </View>
       </TouchableHighlight>
     );
@@ -97,9 +107,11 @@ const styles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: "#CED0CE",
+    marginLeft: 10,
   },
   phraseView: {
     padding: 10,
-    height: 48,
+    height: 42,
+    flexDirection: 'row',
   },
 });
