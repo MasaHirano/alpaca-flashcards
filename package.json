@@ -18,7 +18,8 @@
     "react-native-swipeout": "^2.2.2",
     "react-native-vector-icons": "^4.4.2",
     "react-navigation": "^1.0.0-beta.13",
-    "realm": "^1.13.0"
+    "realm": "^1.13.0",
+    "redux-actions": "^2.2.1"
   },
   "devDependencies": {
     "babel-jest": "21.2.0",
