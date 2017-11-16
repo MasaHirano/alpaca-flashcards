@@ -9,10 +9,10 @@ import { StackNavigator, DrawerNavigator } from 'react-navigation';
 import { SideMenu, List, ListItem } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import Phrases from './screens/Phrases';
-import Signin from './screens/Signin';
-import SettingsList from './screens/SettingsList';
-import SettingsListChild from './screens/SettingsListChild';
+import Phrases from './components/Phrases';
+import Signin from './components/Signin';
+import SettingsList from './components/SettingsList';
+import SettingsListChild from './components/SettingsListChild';
 
 const Drawer = DrawerNavigator({
   Phrases: {
