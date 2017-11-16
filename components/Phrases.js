@@ -185,8 +185,7 @@ export default class Phrases extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    const samplePayload = { foo: 'bar', bar: 'baz' };
-    this.props.completePhrase(samplePayload);
+    this.props.completePhrase();
   }
 
   _setModalVisible(visible) {
