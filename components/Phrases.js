@@ -42,7 +42,7 @@ export default class Phrases extends React.Component {
     }
 
     this.state = {
-      _data: phrases,
+      data: phrases,
       modalVisible: false,
       refreshing: false,
       selectedPhrase: {},
@@ -114,7 +114,7 @@ export default class Phrases extends React.Component {
     return (
       <View style={styles.container} >
         <FlatList
-          data={this.state._data}
+          data={this.state.data}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -161,7 +161,7 @@ export default class Phrases extends React.Component {
       });
     });
     this.setState({
-      _data: this._pickupPhrases(),
+      data: this._pickupPhrases(),
     });
   }
 
@@ -185,9 +185,8 @@ export default class Phrases extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    this.setState({
-      _data: _.clone(this.state._data),
-    });
+    const samplePayload = { foo: 'bar', bar: 'baz' };
+    this.props.completePhrase(samplePayload);
   }
 
   _setModalVisible(visible) {
@@ -222,7 +221,7 @@ export default class Phrases extends React.Component {
         importer.import(data.values);
         this.setState({
           refreshing: false,
-          _data: this._pickupPhrases(),
+          data: this._pickupPhrases(),
         });
       });
     });

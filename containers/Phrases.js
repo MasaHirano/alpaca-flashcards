@@ -1,28 +1,20 @@
-import ReportResponse from '../../components/ReportResponse'
-import { connect } from 'react-redux'
+import Phrases from '../components/Phrases';
+import { connect } from 'react-redux';
 
 import {
-  requestCreateGoodResponse,
-  requestDestroyGoodResponse,
-  requestShowReport,
-} from '../../actions'
+  requestCompletePhrase,
+} from '../actions/phrases';
 
-function mapStateToProps({ auth, reports }) {
-  return { auth, reports }
-}
+const mapStateToProps = (state, ownProps) => {
+  return state;
+};
 
-function mapDispatchToProps(dispatch) {
+const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    createGood: (payload) => {
-      dispatch(requestCreateGoodResponse(payload))
+    completePhrase: (payload) => {
+      dispatch(requestCompletePhrase(payload));
     },
-    destroyGood: (payload) => {
-      dispatch(requestDestroyGoodResponse(payload))
-    },
-    handleShowReport: (payload) => {
-      dispatch(requestShowReport(payload))
-    }
   }
-}
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(ReportResponse)
+export default connect(mapStateToProps, mapDispatchToProps)(Phrases);
