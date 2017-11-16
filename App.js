@@ -12,7 +12,6 @@ import { Provider } from 'react-redux';
 
 import configureStore from './store/configureStore'
 
-// import Phrases from './components/Phrases';
 import Phrases from './containers/Phrases';
 import Signin from './components/Signin';
 import SettingsList from './components/SettingsList';
