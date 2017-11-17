@@ -2,10 +2,9 @@ import React from 'react';
 import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
 import { GoogleSignin } from 'react-native-google-signin';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import _ from 'lodash';
 
 import Config from '../app/config';
-
-const _ = require('lodash');
 
 export default class SettingsList extends React.Component {
   constructor(props) {

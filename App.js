@@ -32,7 +32,7 @@ Drawer.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: (
       <Icon.Button
-        name='align-justify'
+        name='bars'
         color='blue'
         backgroundColor='transparent'
         onPress={() => navigation.navigate('DrawerToggle')}

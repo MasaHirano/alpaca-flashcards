@@ -7,12 +7,11 @@
 import React from 'react';
 import { StyleSheet, View, Text, AsyncStorage, TouchableOpacity } from 'react-native';
 import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import _ from 'lodash';
 
 import Config from '../app/config';
 
 import SettingsList from './SettingsList';
-
-const _ = require('lodash');
 
 export default class Signin extends React.Component {
   constructor(props) {

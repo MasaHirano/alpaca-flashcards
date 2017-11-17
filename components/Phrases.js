@@ -10,12 +10,11 @@ import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 import { GoogleSignin } from 'react-native-google-signin';
+import _ from 'lodash';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
 import Config from '../app/config';
-
-const _ = require('lodash');
 
 export default class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -24,10 +23,10 @@ export default class Phrases extends React.Component {
       title: "Today's English phrases",
       headerRight: (
         <Icon.Button
-          name='refresh'
+          name='archive'
           color='blue'
           backgroundColor='transparent'
-          onPress={() => params.refreshPickups()}
+          onPress={() => params.archivePickups()}
         />
       ),
     };
@@ -57,7 +56,7 @@ export default class Phrases extends React.Component {
 
   componentDidMount() {
     this.props.navigation.setParams({
-      refreshPickups: this._refreshPickups.bind(this),
+      archivePickups: this._archivePickups.bind(this),
     });
 
     GoogleSignin.configure(Config.googleSignin).then(() => {
@@ -131,14 +130,14 @@ export default class Phrases extends React.Component {
           animationOut='fadeOut'
           animationInTiming={100}
           animationOutTiming={100}
-          isVisible={this.state.modalVisible}
+          isVisible={this.props.phrases.modalVisible}
           onRequestClose={() => {}} >
           <TouchableWithoutFeedback // This touchable closes modal.
-            onPress={() => { this._setModalVisible(false) }} >
+            onPress={this.props.onPressModal} >
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
               <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }} >
                 <Text style={{ fontSize: 16, lineHeight: 28 }} >
-                  {this.state.selectedPhrase.sentence}
+                  {this.props.phrases.selectedPhrase.sentence}
                 </Text>
               </View>
             </View>
@@ -152,7 +151,7 @@ export default class Phrases extends React.Component {
     return realm.objects('Phrase').filtered('pickupd = $0', true);
   }
 
-  _refreshPickups() {
+  _archivePickups() {
     const now = new Date();
     realm.write(() => {
       this._pickupdPhrases.snapshot().forEach(phrase => {
@@ -160,9 +159,8 @@ export default class Phrases extends React.Component {
         phrase.updatedAt = now;
       });
     });
-    this.setState({
-      data: this._pickupPhrases(),
-    });
+    const payload = { data: this._pickupPhrases() };
+    this.props.onPressArchiveIcon(payload);
   }
 
   _pickupPhrases() {
@@ -185,20 +183,17 @@ export default class Phrases extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    this.props.completePhrase();
-  }
-
-  _setModalVisible(visible) {
-    this.setState({ modalVisible: visible });
+    const payload = { data: this.state.data };
+    this.props.onPressSwipeCompleteButton(payload);
   }
 
   _showPhraseFor(phrase) {
-    this.setState({ selectedPhrase: phrase });
-    this._setModalVisible(true);
+    const payload = { selectedPhrase: phrase, modalVisible: true };
+    this.props.onPressPhraseList(payload);
   }
 
   _onRefresh() {
-    this.setState({ refreshing: true });
+    this.props.onRefreshPhrases();
     AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
       if (! _.isEmpty(error)) {
         console.error(error);
@@ -218,10 +213,8 @@ export default class Phrases extends React.Component {
       response.json().then((data) => {
         const importer = new Importer();
         importer.import(data.values);
-        this.setState({
-          refreshing: false,
-          data: this._pickupPhrases(),
-        });
+        const payload = { data: this._pickupPhrases() };
+        this.props.onAfterRefreshPhrases(payload);
       });
     });
   }
