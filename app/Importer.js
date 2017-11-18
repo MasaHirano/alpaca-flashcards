@@ -1,8 +1,8 @@
+import _ from 'lodash';
+
 import Phrase from './models/Phrase';
 import Tag from './models/Tag';
 import realm from './db/realm';
-
-const _ = require('lodash');
 
 export default class Importer {
   import(rows) {

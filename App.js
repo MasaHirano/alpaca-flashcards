@@ -8,11 +8,17 @@ import React from 'react';
 import { StackNavigator, DrawerNavigator } from 'react-navigation';
 import { SideMenu, List, ListItem } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { Provider } from 'react-redux';
 
-import Phrases from './screens/Phrases';
-import Signin from './screens/Signin';
-import SettingsList from './screens/SettingsList';
-import SettingsListChild from './screens/SettingsListChild';
+import configureStore from './store/configureStore'
+
+import Phrases from './containers/Phrases';
+import Signin from './components/Signin';
+import SettingsList from './components/SettingsList';
+import SettingsListChild from './components/SettingsListChild';
+
+// Create Redux store.
+const store = configureStore();
 
 const Drawer = DrawerNavigator({
   Phrases: {
@@ -26,7 +32,7 @@ Drawer.navigationOptions = ({ navigation }) => {
   return {
     headerLeft: (
       <Icon.Button
-        name='align-justify'
+        name='bars'
         color='blue'
         backgroundColor='transparent'
         onPress={() => navigation.navigate('DrawerToggle')}
@@ -49,6 +55,10 @@ const SimpleApp = StackNavigator({
 
 export default class App extends React.Component {
   render() {
-    return <SimpleApp />;
-  }
-}
+    return (
+      <Provider store={store}>
+        <SimpleApp />
+      </Provider>
+    );
+  };
+};

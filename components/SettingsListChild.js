@@ -1,10 +1,9 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
 import { GoogleSignin } from 'react-native-google-signin';
+import _ from 'lodash';
 
 import Config from '../app/config';
-
-const _ = require('lodash');
 
 export default class SettingsListChild extends React.Component {
   constructor(props) {

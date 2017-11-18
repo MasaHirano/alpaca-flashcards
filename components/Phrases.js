@@ -10,12 +10,11 @@ import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
 import { GoogleSignin } from 'react-native-google-signin';
+import _ from 'lodash';
 
 import realm from '../app/db/realm';
 import Importer from '../app/Importer';
 import Config from '../app/config';
-
-const _ = require('lodash');
 
 export default class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -24,10 +23,10 @@ export default class Phrases extends React.Component {
       title: "Today's English phrases",
       headerRight: (
         <Icon.Button
-          name='refresh'
+          name='archive'
           color='blue'
           backgroundColor='transparent'
-          onPress={() => params.refreshPickups()}
+          onPress={() => params.archivePickups()}
         />
       ),
     };
@@ -35,29 +34,11 @@ export default class Phrases extends React.Component {
 
   constructor(props) {
     super(props);
-
-    var phrases = this._pickupdPhrases.slice();
-    if (phrases.length === 0) {
-      phrases = this._pickupPhrases();
-    }
-
-    this.state = {
-      _data: phrases,
-      modalVisible: false,
-      refreshing: false,
-      selectedPhrase: {},
-      user: {},
-      spreadsheet: {
-        id: null,
-        title: null,
-        lastSyncedAt: null,
-      },
-    };
   }
 
   componentDidMount() {
     this.props.navigation.setParams({
-      refreshPickups: this._refreshPickups.bind(this),
+      archivePickups: this._archivePickups.bind(this),
     });
 
     GoogleSignin.configure(Config.googleSignin).then(() => {
@@ -66,20 +47,18 @@ export default class Phrases extends React.Component {
         if (user === null) {
           return;
         }
-        this.setState({ user });
+        this.props.onRetrieveGoogleUser({ user });
         AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
           const sheetInfo = _.fromPairs(stores);
-          this.setState({
-            spreadsheet: {
-              id: sheetInfo['GoogleSpreadsheet.id'],
-              title: sheetInfo['GoogleSpreadsheet.title'],
-              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-            },
-          });
-          if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
+          const spreadsheet = {
+            id: sheetInfo['GoogleSpreadsheet.id'],
+            title: sheetInfo['GoogleSpreadsheet.title'],
+            lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+          };
+          this.props.onReadGoogleSheetInfo({ spreadsheet });
+          if ([user, ..._.at(spreadsheet, ['id', 'title'])].every(_.negate(_.isEmpty))) {
             // Batch update to spreadsheet.
             const endpoint = Config.googleAPI.sheetsEndpoint,
-                  { spreadsheet, user } = this.state,
                   lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
             const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
 
@@ -103,7 +82,7 @@ export default class Phrases extends React.Component {
               });
             });
           }
-          console.log('Phrases#componentDidMount', this.state);
+          console.log('Phrases#componentDidMount', this.props.phrases);
         });
       })
       .done();
@@ -114,13 +93,13 @@ export default class Phrases extends React.Component {
     return (
       <View style={styles.container} >
         <FlatList
-          data={this.state._data}
+          data={this.props.phrases.data}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
             <RefreshControl
-              refreshing={this.state.refreshing}
+              refreshing={this.props.phrases.refreshing}
               onRefresh={this._onRefresh.bind(this)}
             />
           }
@@ -131,14 +110,14 @@ export default class Phrases extends React.Component {
           animationOut='fadeOut'
           animationInTiming={100}
           animationOutTiming={100}
-          isVisible={this.state.modalVisible}
+          isVisible={this.props.phrases.modalVisible}
           onRequestClose={() => {}} >
           <TouchableWithoutFeedback // This touchable closes modal.
-            onPress={() => { this._setModalVisible(false) }} >
+            onPress={this.props.onPressModal} >
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
               <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }} >
                 <Text style={{ fontSize: 16, lineHeight: 28 }} >
-                  {this.state.selectedPhrase.sentence}
+                  {this.props.phrases.selectedPhrase.sentence}
                 </Text>
               </View>
             </View>
@@ -152,7 +131,7 @@ export default class Phrases extends React.Component {
     return realm.objects('Phrase').filtered('pickupd = $0', true);
   }
 
-  _refreshPickups() {
+  _archivePickups() {
     const now = new Date();
     realm.write(() => {
       this._pickupdPhrases.snapshot().forEach(phrase => {
@@ -160,9 +139,8 @@ export default class Phrases extends React.Component {
         phrase.updatedAt = now;
       });
     });
-    this.setState({
-      _data: this._pickupPhrases(),
-    });
+    const payload = { data: this._pickupPhrases() };
+    this.props.onPressArchiveIcon(payload);
   }
 
   _pickupPhrases() {
@@ -185,22 +163,16 @@ export default class Phrases extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    this.setState({
-      _data: _.clone(this.state._data),
-    });
-  }
-
-  _setModalVisible(visible) {
-    this.setState({ modalVisible: visible });
+    this.props.onPressSwipeCompleteButton();
   }
 
   _showPhraseFor(phrase) {
-    this.setState({ selectedPhrase: phrase });
-    this._setModalVisible(true);
+    const payload = { selectedPhrase: phrase, modalVisible: true };
+    this.props.onPressPhraseList(payload);
   }
 
   _onRefresh() {
-    this.setState({ refreshing: true });
+    this.props.onRefreshPhrases();
     AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
       if (! _.isEmpty(error)) {
         console.error(error);
@@ -211,7 +183,7 @@ export default class Phrases extends React.Component {
 
   _importData() {
     const endpoint = Config.googleAPI.sheetsEndpoint,
-          { spreadsheet, user } = this.state;
+          { spreadsheet, user } = this.props.phrases;
 
     fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
       headers: { 'Authorization': `Bearer ${user.accessToken}` },
@@ -220,10 +192,7 @@ export default class Phrases extends React.Component {
       response.json().then((data) => {
         const importer = new Importer();
         importer.import(data.values);
-        this.setState({
-          refreshing: false,
-          _data: this._pickupPhrases(),
-        });
+        this.props.onAfterRefreshPhrases();
       });
     });
   }
