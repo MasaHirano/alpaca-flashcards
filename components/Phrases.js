@@ -34,24 +34,6 @@ export default class Phrases extends React.Component {
 
   constructor(props) {
     super(props);
-
-    var phrases = this._pickupdPhrases.slice();
-    if (phrases.length === 0) {
-      phrases = this._pickupPhrases();
-    }
-
-    this.state = {
-      data: phrases,
-      modalVisible: false,
-      refreshing: false,
-      selectedPhrase: {},
-      user: {},
-      spreadsheet: {
-        id: null,
-        title: null,
-        lastSyncedAt: null,
-      },
-    };
   }
 
   componentDidMount() {
@@ -65,20 +47,18 @@ export default class Phrases extends React.Component {
         if (user === null) {
           return;
         }
-        this.setState({ user });
+        this.props.onRetrieveGoogleUser({ user });
         AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
           const sheetInfo = _.fromPairs(stores);
-          this.setState({
-            spreadsheet: {
-              id: sheetInfo['GoogleSpreadsheet.id'],
-              title: sheetInfo['GoogleSpreadsheet.title'],
-              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-            },
-          });
-          if (_.at(this.state, ['user', 'spreadsheet.id', 'spreadsheet.title']).every(_.negate(_.isEmpty))) {
+          const spreadsheet = {
+            id: sheetInfo['GoogleSpreadsheet.id'],
+            title: sheetInfo['GoogleSpreadsheet.title'],
+            lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+          };
+          this.props.onReadGoogleSheetInfo({ spreadsheet });
+          if ([user, ..._.at(spreadsheet, ['id', 'title'])].every(_.negate(_.isEmpty))) {
             // Batch update to spreadsheet.
             const endpoint = Config.googleAPI.sheetsEndpoint,
-                  { spreadsheet, user } = this.state,
                   lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
             const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
 
@@ -102,7 +82,7 @@ export default class Phrases extends React.Component {
               });
             });
           }
-          console.log('Phrases#componentDidMount', this.state);
+          console.log('Phrases#componentDidMount', this.props.phrases);
         });
       })
       .done();
@@ -113,13 +93,13 @@ export default class Phrases extends React.Component {
     return (
       <View style={styles.container} >
         <FlatList
-          data={this.state.data}
+          data={this.props.phrases.data}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           refreshControl={
             <RefreshControl
-              refreshing={this.state.refreshing}
+              refreshing={this.props.phrases.refreshing}
               onRefresh={this._onRefresh.bind(this)}
             />
           }
@@ -183,8 +163,7 @@ export default class Phrases extends React.Component {
       item.updatedAt = now;
     });
     // Update lists for display.
-    const payload = { data: this.state.data };
-    this.props.onPressSwipeCompleteButton(payload);
+    this.props.onPressSwipeCompleteButton();
   }
 
   _showPhraseFor(phrase) {
@@ -204,7 +183,7 @@ export default class Phrases extends React.Component {
 
   _importData() {
     const endpoint = Config.googleAPI.sheetsEndpoint,
-          { spreadsheet, user } = this.state;
+          { spreadsheet, user } = this.props.phrases;
 
     fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
       headers: { 'Authorization': `Bearer ${user.accessToken}` },
@@ -213,8 +192,7 @@ export default class Phrases extends React.Component {
       response.json().then((data) => {
         const importer = new Importer();
         importer.import(data.values);
-        const payload = { data: this._pickupPhrases() };
-        this.props.onAfterRefreshPhrases(payload);
+        this.props.onAfterRefreshPhrases();
       });
     });
   }

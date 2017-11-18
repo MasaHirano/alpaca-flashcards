@@ -9,6 +9,8 @@ import {
   requestCloseModal,
   requestRefreshPhrases,
   requestImportPhrases,
+  requestRetrieveGoogleUser,
+  requestReadGoogleSheetInfo,
 } from '../actions/phrases';
 
 const mapStateToProps = ({ phrases }, ownProps) => {
@@ -17,8 +19,8 @@ const mapStateToProps = ({ phrases }, ownProps) => {
 
 const mapDispatchToProps = (dispatch, ownProps) => {
   return {
-    onPressSwipeCompleteButton: (payload) => {
-      dispatch(requestCompletePhrase(payload));
+    onPressSwipeCompleteButton: () => {
+      dispatch(requestCompletePhrase());
     },
     onPressArchiveIcon: (payload) => {
       dispatch(requestArchivePickups(payload));
@@ -32,8 +34,14 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onRefreshPhrases: () => {
       dispatch(requestRefreshPhrases());
     },
-    onAfterRefreshPhrases: (payload) => {
-      dispatch(requestImportPhrases(payload));
+    onAfterRefreshPhrases: () => {
+      dispatch(requestImportPhrases());
+    },
+    onRetrieveGoogleUser: (payload) => {
+      dispatch(requestRetrieveGoogleUser(payload));
+    },
+    onReadGoogleSheetInfo: (payload) => {
+      dispatch(requestReadGoogleSheetInfo(payload));
     },
   }
 };

@@ -17,3 +17,9 @@ export const requestRefreshPhrases = createAction(REQUEST_REFRESH_PHRASES);
 
 export const REQUEST_IMPORT_PHRASES = 'REQUEST_IMPORT_PHRASES';
 export const requestImportPhrases = createAction(REQUEST_IMPORT_PHRASES);
+
+export const REQUEST_RETRIEVE_GOOGLE_USER = 'REQUEST_RETRIEVE_GOOGLE_USER';
+export const requestRetrieveGoogleUser = createAction(REQUEST_RETRIEVE_GOOGLE_USER);
+
+export const REQUEST_READ_GOOGLE_SHEET_INFO = 'REQUEST_READ_GOOGLE_INFO';
+export const requestReadGoogleSheetInfo = createAction(REQUEST_READ_GOOGLE_SHEET_INFO);
