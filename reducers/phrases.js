@@ -9,6 +9,8 @@ import {
   REQUEST_IMPORT_PHRASES,
   REQUEST_RETRIEVE_GOOGLE_USER,
   REQUEST_READ_GOOGLE_SHEET_INFO,
+  SUCCESS_RETRIEVE_GOOGLE_USER,
+  SUCCESS_READ_GOOGLE_SHEET_INFO,
 } from '../actions';
 
 function fetchPickedUpPhrases() {
@@ -43,13 +45,19 @@ function initializeState() {
 }
 
 export default function reducer(state = initializeState(), action) {
-  console.log(`reducer: ${action.type} called. payload: %o, state: %o`, action.payload, state);
+  console.log(`reducer: ${action.type} called. payload: %O, state: %O`, action.payload, state);
   switch (action.type) {
-    case REQUEST_ARCHIVE_PICKUPS:
     case REQUEST_SHOW_PHRASE:
     case REQUEST_RETRIEVE_GOOGLE_USER:
     case REQUEST_READ_GOOGLE_SHEET_INFO:
+    case SUCCESS_RETRIEVE_GOOGLE_USER:
+    case SUCCESS_READ_GOOGLE_SHEET_INFO:
       return Object.assign({}, state, action.payload);
+
+    case REQUEST_ARCHIVE_PICKUPS:
+      return Object.assign({}, state, {
+        data: pickupPhrases(),
+      });
 
     case REQUEST_COMPLETE_PHRASE:
       return Object.assign({}, state); // Just for re-rendering.
