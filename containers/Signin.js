@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import _ from 'lodash';
 
 import {
-  // requestCompletePhrase,
   requestGoogleSignIn,
+  requestGoogleSignOut,
 } from '../actions';
 
 const mapStateToProps = ({ signin, phrases }, ownProps) => {
@@ -15,6 +15,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     onPressSignIn: () => {
       dispatch(requestGoogleSignIn());
+    },
+    onPressSignOut: () => {
+      dispatch(requestGoogleSignOut());
     },
   }
 };

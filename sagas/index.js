@@ -9,4 +9,5 @@ export default function* rootSaga() {
 
   yield fork(signin.handleRetrieveGoogleUser);
   yield fork(signin.handleGoogleSignIn);
+  yield fork(signin.handleGoogleSignOut);
 }

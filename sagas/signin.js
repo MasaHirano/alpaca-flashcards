@@ -7,10 +7,40 @@ import Config from '../app/config';
 import realm from '../app/db/realm';
 import {
   REQUEST_RETRIEVE_GOOGLE_USER,
-  successRetrieveGoogleUser,
   REQUEST_GOOGLE_SIGN_IN,
+  REQUEST_GOOGLE_SIGN_OUT,
+  successRetrieveGoogleUser,
   successGoogleSignIn,
+  successGoogleSignOut,
 } from '../actions';
+
+export function* handleGoogleSignOut() {
+  while (true) {
+    const action = yield take(REQUEST_GOOGLE_SIGN_OUT);
+    console.log('[saga]handleGoogleSignOut. action: %O', action);
+
+    try {
+      yield call([GoogleSignin, 'signOut']);
+    } catch (error) {
+      console.error('[saga]handleReadGoogleSheetInfo. %O', error);
+      continue;
+    }
+
+    const keyValuePairs = [
+      ['GoogleSpreadsheet.id', ''],
+      ['GoogleSpreadsheet.name', ''],
+      ['GoogleSpreadsheet.title', ''],
+    ];
+    try {
+      yield call([AsyncStorage, 'multiSet'], keyValuePairs);
+    } catch (error) {
+      console.error('[saga]handleReadGoogleSheetInfo. %O', error);
+      continue;
+    }
+
+    yield put(successGoogleSignOut());
+  }
+}
 
 export function* handleGoogleSignIn() {
   while (true) {
@@ -38,27 +68,3 @@ export function* handleRetrieveGoogleUser() {
     yield put(successRetrieveGoogleUser({ user }));
   }
 }
-
-// export function* handleReadGoogleSheetInfo() {
-//   while (true) {
-//     const action = yield take(REQUEST_READ_GOOGLE_SHEET_INFO);
-//     console.log('[saga]handleReadGoogleSheetInfo. action: %O', action);
-
-//     try {
-//       var stores = yield call([AsyncStorage, 'multiGet'], ['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt']);
-//     } catch (error) {
-//       console.error('[saga]handleReadGoogleSheetInfo. %O', error);
-//       continue;
-//     }
-//     console.log('[saga]handleUpdateGoogleSheet. stores: %O', stores);
-
-//     const sheetInfo = _.fromPairs(stores);
-//     const spreadsheet = {
-//       id: sheetInfo['GoogleSpreadsheet.id'],
-//       title: sheetInfo['GoogleSpreadsheet.title'],
-//       lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-//     };
-
-//     yield put(successReadGoogleSheetInfo({ spreadsheet }));
-//   }
-// }

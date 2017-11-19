@@ -16,13 +16,6 @@ import SettingsList from './SettingsList';
 export default class Signin extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      sheets: [],        // List of spreadsheets
-      innerSheets: [],   // List of titles in a spreadsheet
-      user: {},          // Google user objects
-      sheetId: null,     // Active sheeetId
-      sheetTitle: null,  // Active sheetTitle
-    };
   }
 
   componentDidMount() {
@@ -78,22 +71,7 @@ export default class Signin extends React.Component {
   }
 
   _signOut() {
-    GoogleSignin.signOut()
-    .then(() => {
-      var keyValuePairs = [
-        ['GoogleSpreadsheet.id', ''],
-        ['GoogleSpreadsheet.name', ''],
-        ['GoogleSpreadsheet.title', ''],
-      ];
-      AsyncStorage.multiSet(keyValuePairs, (errors) => {
-        if (! _.isEmpty(errors)) {
-          console.error('Signin#_signOut', errors);
-        }
-      });
-    })
-    .catch((err) => {
-      console.error('Signin#_signOut', err);
-    });
+    this.props.onPressSignOut();
   }
 }
 
