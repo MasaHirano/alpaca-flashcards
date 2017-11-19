@@ -11,7 +11,7 @@ import _ from 'lodash';
 
 import Config from '../app/config';
 
-import SettingsList from './SettingsList';
+import SettingsList from '../containers/SettingsList';
 
 export default class Signin extends React.Component {
   constructor(props) {

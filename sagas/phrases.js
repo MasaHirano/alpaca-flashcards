@@ -19,7 +19,8 @@ export function* handleReadGoogleSheetInfo() {
     console.log('[saga]handleReadGoogleSheetInfo. action: %O', action);
 
     try {
-      var stores = yield call([AsyncStorage, 'multiGet'], ['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt']);
+      const keys = ['GoogleSpreadsheet.id', 'GoogleSpreadsheet.name', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'];
+      var stores = yield call([AsyncStorage, 'multiGet'], keys);
     } catch (error) {
       console.error('[saga]handleReadGoogleSheetInfo. %O', error);
       continue;
@@ -29,6 +30,7 @@ export function* handleReadGoogleSheetInfo() {
     const sheetInfo = _.fromPairs(stores);
     const spreadsheet = {
       id: sheetInfo['GoogleSpreadsheet.id'],
+      name: sheetInfo['GoogleSpreadsheet.name'],
       title: sheetInfo['GoogleSpreadsheet.title'],
       lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
     };
