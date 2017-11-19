@@ -26,31 +26,11 @@ export default class Signin extends React.Component {
   }
 
   componentDidMount() {
-    GoogleSignin.hasPlayServices({ autoResolve: true }).then(() => {
-      // play services are available. can now configure library
-    })
-    .catch((err) => {
-      console.error("Play services error", err.code, err.message);
-    });
-
-    GoogleSignin.configure(Config.googleSignin).then(() => {
-      GoogleSignin.currentUserAsync().then((user) => {
-        this.setState({ user });
-      }).done();
-    });
-
-    AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title'], (err, stores) => {
-      const sheetInfo = _.fromPairs(stores);
-      this.setState({
-        sheetId: sheetInfo['GoogleSpreadsheet.id'],
-        sheetTitle: sheetInfo['GoogleSpreadsheet.title'],
-      });
-      console.log(this.state)
-    });
   }
 
   get _loggedInMessage() {
-    const { user } = this.state;
+    console.log('_loggedInMessage', this.props);
+    const { user } = this.props.signin;
     if (! _.isEmpty(user)) {
       return `Signed in as ${user.email}`;
     } else {
@@ -66,7 +46,6 @@ export default class Signin extends React.Component {
             style={{ width: 312, height: 48 }}
             size={GoogleSigninButton.Size.Wide}
             color={GoogleSigninButton.Color.Dark}
-            onPress={this._signIn.bind(this)}
           />
           <Text style={{ color: 'dimgray', paddingLeft: 5 }} >
             {this._loggedInMessage}
@@ -98,18 +77,6 @@ export default class Signin extends React.Component {
     );
   }
 
-  _signIn() {
-    GoogleSignin.signIn()
-    .then((user) => {
-      console.log('Signin#_signIn', user);
-      this.setState({ user });
-    })
-    .catch((err) => {
-      console.error('WRONG SIGNIN', err);
-    })
-    .done();
-  }
-
   _signOut() {
     GoogleSignin.signOut()
     .then(() => {
@@ -123,7 +90,6 @@ export default class Signin extends React.Component {
           console.error('Signin#_signOut', errors);
         }
       });
-      this.setState({ user: {}, sheetId: null, sheetTitle: null });
     })
     .catch((err) => {
       console.error('Signin#_signOut', err);
@@ -135,4 +101,4 @@ const styles = StyleSheet.create({
   navBar: {
     flex: 1,
   },
-})
+});

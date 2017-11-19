@@ -14,8 +14,8 @@ import {
   requestUpdateGoogleSheet,
 } from '../actions/phrases';
 
-const mapStateToProps = ({ phrases }, ownProps) => {
-  return { phrases };
+const mapStateToProps = ({ phrases, signin }, ownProps) => {
+  return { phrases, signin };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {

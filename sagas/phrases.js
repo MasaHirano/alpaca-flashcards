@@ -7,41 +7,44 @@ import Config from '../app/config';
 import realm from '../app/db/realm';
 import {
   REQUEST_UPDATE_GOOGLE_SHEET,
-  successRetrieveGoogleUser,
+  REQUEST_READ_GOOGLE_SHEET_INFO,
+  requestRetrieveGoogleUser,
+  requestReadGoogleSheetInfo,
   successReadGoogleSheetInfo,
-} from '../actions/phrases'
+} from '../actions';
 
-export function* handleUpdateGoogleSheet() {
+export function* handleReadGoogleSheetInfo() {
   while (true) {
-    const action = yield take(REQUEST_UPDATE_GOOGLE_SHEET);
-    console.log('[saga]handleUpdateGoogleSheet. action: %o', action);
-
-    yield call(GoogleSignin.configure, Config.googleSignin);
-
-    const user = yield call([GoogleSignin, 'currentUserAsync']);
-    console.log('[saga]handleUpdateGoogleSheet. user: %O', user);
-    if (user === null) {
-      continue;
-    }
-
-    yield put(successRetrieveGoogleUser({ user }));
+    const action = yield take(REQUEST_READ_GOOGLE_SHEET_INFO);
+    console.log('[saga]handleReadGoogleSheetInfo. action: %O', action);
 
     try {
       var stores = yield call([AsyncStorage, 'multiGet'], ['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt']);
     } catch (error) {
-      console.error('[saga]handleUpdateGoogleSheet. %O', error);
+      console.error('[saga]handleReadGoogleSheetInfo. %O', error);
       continue;
     }
     console.log('[saga]handleUpdateGoogleSheet. stores: %O', stores);
 
     const sheetInfo = _.fromPairs(stores);
     const spreadsheet = {
-            id: sheetInfo['GoogleSpreadsheet.id'],
-            title: sheetInfo['GoogleSpreadsheet.title'],
-            lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-          };
-    yield put(successReadGoogleSheetInfo({ spreadsheet }));
+      id: sheetInfo['GoogleSpreadsheet.id'],
+      title: sheetInfo['GoogleSpreadsheet.title'],
+      lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
+    };
 
+    yield put(successReadGoogleSheetInfo({ spreadsheet }));
+  }
+}
+
+export function* handleUpdateGoogleSheet() {
+  while (true) {
+    const action = yield take(REQUEST_UPDATE_GOOGLE_SHEET);
+
+    yield put(requestRetrieveGoogleUser());
+    yield put(requestReadGoogleSheetInfo());
+
+    const [user, spreadsheet] = yield select((state) => _.at(state, ['signin.user', 'phrases.spreadsheet']));
     if ([user, ..._.at(spreadsheet, ['id', 'title'])].some(_.isEmpty)) {
       continue;
     }

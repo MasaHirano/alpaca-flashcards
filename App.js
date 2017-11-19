@@ -13,12 +13,9 @@ import { Provider } from 'react-redux';
 import configureStore from './store/configureStore'
 
 import Phrases from './containers/Phrases';
-import Signin from './components/Signin';
+import Signin from './containers/Signin';
 import SettingsList from './components/SettingsList';
 import SettingsListChild from './components/SettingsListChild';
-
-// Create Redux store.
-const store = configureStore();
 
 const Drawer = DrawerNavigator({
   Phrases: {
@@ -52,6 +49,9 @@ const SimpleApp = StackNavigator({
     screen: SettingsListChild,
   },
 });
+
+// Create Redux store.
+const store = configureStore();
 
 export default class App extends React.Component {
   render() {
