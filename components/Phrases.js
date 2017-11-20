@@ -40,53 +40,7 @@ export default class Phrases extends React.Component {
     this.props.navigation.setParams({
       archivePickups: this._archivePickups.bind(this),
     });
-
-    GoogleSignin.configure(Config.googleSignin).then(() => {
-      GoogleSignin.currentUserAsync().then((user) => {
-        console.log('Phrases#componentDidMount', user);
-        if (user === null) {
-          return;
-        }
-        this.props.onRetrieveGoogleUser({ user });
-        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title', 'GoogleSpreadsheet.lastSyncedAt'], (err, stores) => {
-          const sheetInfo = _.fromPairs(stores);
-          const spreadsheet = {
-            id: sheetInfo['GoogleSpreadsheet.id'],
-            title: sheetInfo['GoogleSpreadsheet.title'],
-            lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-          };
-          this.props.onReadGoogleSheetInfo({ spreadsheet });
-          if ([user, ..._.at(spreadsheet, ['id', 'title'])].every(_.negate(_.isEmpty))) {
-            // Batch update to spreadsheet.
-            const endpoint = Config.googleAPI.sheetsEndpoint,
-                  lastSyncedAt = new Date(spreadsheet.lastSyncedAt);
-            const recentlyUpdated = realm.objects('Phrase').filtered('updatedAt > $0', lastSyncedAt);
-
-            fetch(`${endpoint}/${spreadsheet.id}/values:batchUpdate`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${user.accessToken}` },
-              body: JSON.stringify({
-                valueInputOption: 'USER_ENTERED',
-                data: recentlyUpdated.map(phrase => {
-                  return {
-                    range: `${spreadsheet.title}!A${phrase.id + 1}:F${phrase.id + 1}`,
-                    majorDimension: 'ROWS',
-                    values: [phrase.sheetValues],
-                  };
-                }),
-              }),
-            })
-            .then((response) => {
-              response.json().then((data) => {
-                console.log('Phrases#componentDidMount', data);
-              });
-            });
-          }
-          console.log('Phrases#componentDidMount', this.props.phrases);
-        });
-      })
-      .done();
-    });
+    this.props.onUpdateGoogleSheet();
   }
 
   render() {
@@ -139,20 +93,7 @@ export default class Phrases extends React.Component {
         phrase.updatedAt = now;
       });
     });
-    const payload = { data: this._pickupPhrases() };
-    this.props.onPressArchiveIcon(payload);
-  }
-
-  _pickupPhrases() {
-    const now = new Date();
-    const pickupd = realm.objects('Phrase').filtered('completedAt = $0', null).slice(0, 8);
-    realm.write(() => {
-      pickupd.forEach(phrase => {
-        phrase.pickupd = true;
-        phrase.updatedAt = now;
-      });
-    });
-    return pickupd;
+    this.props.onPressArchiveIcon();
   }
 
   _completePhrase({ item, index }) {

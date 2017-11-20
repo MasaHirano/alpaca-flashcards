@@ -11,6 +11,7 @@ import {
   requestImportPhrases,
   requestRetrieveGoogleUser,
   requestReadGoogleSheetInfo,
+  requestUpdateGoogleSheet,
 } from '../actions/phrases';
 
 const mapStateToProps = ({ phrases }, ownProps) => {
@@ -22,8 +23,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onPressSwipeCompleteButton: () => {
       dispatch(requestCompletePhrase());
     },
-    onPressArchiveIcon: (payload) => {
-      dispatch(requestArchivePickups(payload));
+    onPressArchiveIcon: () => {
+      dispatch(requestArchivePickups());
     },
     onPressPhraseList: (payload) => {
       dispatch(requestShowPhrase(payload));
@@ -42,6 +43,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     },
     onReadGoogleSheetInfo: (payload) => {
       dispatch(requestReadGoogleSheetInfo(payload));
+    },
+    onUpdateGoogleSheet: () => {
+      dispatch(requestUpdateGoogleSheet());
     },
   }
 };
