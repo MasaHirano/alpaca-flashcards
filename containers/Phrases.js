@@ -9,13 +9,11 @@ import {
   requestCloseModal,
   requestRefreshPhrases,
   requestImportPhrases,
-  requestRetrieveGoogleUser,
-  requestReadGoogleSheetInfo,
   requestUpdateGoogleSheet,
 } from '../actions/phrases';
 
-const mapStateToProps = ({ phrases }, ownProps) => {
-  return { phrases };
+const mapStateToProps = ({ phrases, signin }, ownProps) => {
+  return { phrases, signin };
 };
 
 const mapDispatchToProps = (dispatch, ownProps) => {
@@ -37,12 +35,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     },
     onAfterRefreshPhrases: () => {
       dispatch(requestImportPhrases());
-    },
-    onRetrieveGoogleUser: (payload) => {
-      dispatch(requestRetrieveGoogleUser(payload));
-    },
-    onReadGoogleSheetInfo: (payload) => {
-      dispatch(requestReadGoogleSheetInfo(payload));
     },
     onUpdateGoogleSheet: () => {
       dispatch(requestUpdateGoogleSheet());

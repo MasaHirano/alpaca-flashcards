@@ -124,7 +124,8 @@ export default class Phrases extends React.Component {
 
   _importData() {
     const endpoint = Config.googleAPI.sheetsEndpoint,
-          { spreadsheet, user } = this.props.phrases;
+          { spreadsheet } = this.props.phrases,
+          { user } = this.props.signin;
 
     fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
       headers: { 'Authorization': `Bearer ${user.accessToken}` },

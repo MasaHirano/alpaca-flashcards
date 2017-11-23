@@ -7,9 +7,6 @@ import {
   REQUEST_CLOSE_MODAL,
   REQUEST_REFRESH_PHRASES,
   REQUEST_IMPORT_PHRASES,
-  REQUEST_RETRIEVE_GOOGLE_USER,
-  REQUEST_READ_GOOGLE_SHEET_INFO,
-  SUCCESS_RETRIEVE_GOOGLE_USER,
   SUCCESS_READ_GOOGLE_SHEET_INFO,
 } from '../actions';
 
@@ -45,12 +42,9 @@ function initializeState() {
 }
 
 export default function reducer(state = initializeState(), action) {
-  console.log(`reducer: ${action.type} called. payload: %O, state: %O`, action.payload, state);
+  console.log(`[reducer]${action.type} called. payload: %O, state: %O`, action.payload, state);
   switch (action.type) {
     case REQUEST_SHOW_PHRASE:
-    case REQUEST_RETRIEVE_GOOGLE_USER:
-    case REQUEST_READ_GOOGLE_SHEET_INFO:
-    case SUCCESS_RETRIEVE_GOOGLE_USER:
     case SUCCESS_READ_GOOGLE_SHEET_INFO:
       return Object.assign({}, state, action.payload);
 
