@@ -13,8 +13,6 @@ import { GoogleSignin } from 'react-native-google-signin';
 import _ from 'lodash';
 
 import realm from '../app/db/realm';
-import Importer from '../app/Importer';
-import Config from '../app/config';
 
 export default class Phrases extends React.Component {
   static navigationOptions = ({ navigation }) => {
@@ -54,7 +52,7 @@ export default class Phrases extends React.Component {
           refreshControl={
             <RefreshControl
               refreshing={this.props.phrases.refreshing}
-              onRefresh={this._onRefresh.bind(this)}
+              onRefresh={this.props.onRefreshPhrases}
             />
           }
         />
@@ -110,33 +108,6 @@ export default class Phrases extends React.Component {
   _showPhraseFor(phrase) {
     const payload = { selectedPhrase: phrase };
     this.props.onPressPhraseList(payload);
-  }
-
-  _onRefresh() {
-    this.props.onRefreshPhrases();
-    AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
-      if (! _.isEmpty(error)) {
-        console.error(error);
-      }
-    });
-    this._importData();
-  }
-
-  _importData() {
-    const endpoint = Config.googleAPI.sheetsEndpoint,
-          { spreadsheet } = this.props.phrases,
-          { user } = this.props.signin;
-
-    fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
-      headers: { 'Authorization': `Bearer ${user.accessToken}` },
-    })
-    .then((response) => {
-      response.json().then((data) => {
-        const importer = new Importer();
-        importer.import(data.values);
-        this.props.onAfterRefreshPhrases();
-      });
-    });
   }
 
   _renderTags(item) {

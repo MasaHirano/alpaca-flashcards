@@ -6,6 +6,7 @@ import * as signin from './signin'
 export default function* rootSaga() {
   yield fork(phrases.handleUpdateGoogleSheet);
   yield fork(phrases.handleReadGoogleSheetInfo);
+  yield fork(phrases.handleRefreshPhrases);
 
   yield fork(signin.handleRetrieveGoogleUser);
   yield fork(signin.handleGoogleSignIn);

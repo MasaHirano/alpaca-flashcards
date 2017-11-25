@@ -33,9 +33,6 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     onRefreshPhrases: () => {
       dispatch(requestRefreshPhrases());
     },
-    onAfterRefreshPhrases: () => {
-      dispatch(requestImportPhrases());
-    },
     onUpdateGoogleSheet: () => {
       dispatch(requestUpdateGoogleSheet());
     },
