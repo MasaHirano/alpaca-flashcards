@@ -6,40 +6,17 @@ import _ from 'lodash';
 
 import Config from '../app/config';
 
+const data = [
+        { key: 'sheetId', name: 'Sheet ID' },
+        { key: 'sheetTitle', name: 'Sheet Title' },
+      ];
+
 export default class SettingsList extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      data: [
-        { key: 'sheetId', name: 'Sheet ID' },
-        { key: 'sheetTitle', name: 'Sheet Title' },
-      ],
-      spreadsheet: {
-        id: null,
-        name: null,
-        title: null,
-        lastSyncedAt: null,
-      },
-    };
   }
 
   componentDidMount() {
-    GoogleSignin.configure(Config.googleSignin).then(() => {
-      GoogleSignin.currentUserAsync().then((user) => {
-        this.setState({ user });
-        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.name', 'GoogleSpreadsheet.title'], (err, stores) => {
-          const sheetInfo = _.fromPairs(stores);
-          this.setState({
-            spreadsheet: {
-              id: sheetInfo['GoogleSpreadsheet.id'],
-              name: sheetInfo['GoogleSpreadsheet.name'],
-              title: sheetInfo['GoogleSpreadsheet.title'],
-              lastSyncedAt: sheetInfo['GoogleSpreadsheet.lastSyncedAt'],
-            }
-          });
-        });
-      }).done();
-    });
   }
 
   _onPress({ item, index }) {
@@ -49,7 +26,7 @@ export default class SettingsList extends React.Component {
         console.log('onSelect has runned', data);
         this.setState(data);
       },
-      spreadsheet: this.state.spreadsheet,
+      spreadsheet: this.props.phrases.spreadsheet,
     });
   }
 
@@ -57,7 +34,7 @@ export default class SettingsList extends React.Component {
     return (
       <View style={styles.container} >
         <FlatList
-          data={this.state.data}
+          data={data}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -67,11 +44,13 @@ export default class SettingsList extends React.Component {
   }
 
   _renderItem({ item, index }) {
-    const { navigation } = this.props;
+    const { navigation } = this.props,
+          { spreadsheet } = this.props.phrases;
+    console.log('SettingList._renderItem', spreadsheet);
     if (item.key === 'sheetId') {
-      var selectedItem = this.state.spreadsheet.name;
+      var selectedItem = spreadsheet.name;
     } else if (item.key === 'sheetTitle') {
-      var selectedItem = this.state.spreadsheet.title;
+      var selectedItem = spreadsheet.title;
     }
     return (
       <TouchableHighlight
@@ -98,7 +77,6 @@ export default class SettingsList extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
     backgroundColor: '#fff',
     justifyContent: 'center',
     marginTop: 10,

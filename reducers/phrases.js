@@ -44,9 +44,14 @@ function initializeState() {
 export default function reducer(state = initializeState(), action) {
   console.log(`[reducer]${action.type} called. payload: %O, state: %O`, action.payload, state);
   switch (action.type) {
-    case REQUEST_SHOW_PHRASE:
     case SUCCESS_READ_GOOGLE_SHEET_INFO:
       return Object.assign({}, state, action.payload);
+
+    case REQUEST_SHOW_PHRASE:
+      return Object.assign({}, state, {
+        modalVisible: true,
+        selectedPhrase: action.payload.selectedPhrase,
+      });
 
     case REQUEST_ARCHIVE_PICKUPS:
       return Object.assign({}, state, {

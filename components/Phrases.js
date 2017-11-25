@@ -108,7 +108,7 @@ export default class Phrases extends React.Component {
   }
 
   _showPhraseFor(phrase) {
-    const payload = { selectedPhrase: phrase, modalVisible: true };
+    const payload = { selectedPhrase: phrase };
     this.props.onPressPhraseList(payload);
   }
 
