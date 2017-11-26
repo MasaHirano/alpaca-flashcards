@@ -24,9 +24,6 @@ export default class SettingsListChild extends React.Component {
   }
 
   _renderItem({ item, index }) {
-    const { navigation } = this.props,
-          { onSelectListRow } = navigation.state.params;
-
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
@@ -41,7 +38,10 @@ export default class SettingsListChild extends React.Component {
   }
 
   _onPressItemRow({ item, index }) {
-    onSelectListRow({ item: item.data, index })
+    const { navigation } = this.props,
+          { onSelectListRow } = navigation.state.params;
+
+    onSelectListRow({ item: item.data, index });
     navigation.goBack();
   }
 }

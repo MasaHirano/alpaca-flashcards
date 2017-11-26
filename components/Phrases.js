@@ -22,7 +22,7 @@ export default class Phrases extends React.Component {
           name='archive'
           color='blue'
           backgroundColor='transparent'
-          onPress={params.archivePickups}
+          onPress={() => { params.archivePickups() }}
         />
       ),
     };
@@ -60,9 +60,8 @@ export default class Phrases extends React.Component {
           animationOut='fadeOut'
           animationInTiming={100}
           animationOutTiming={100}
-          isVisible={this.props.phrases.modalVisible}
-          onRequestClose={() => {}} >
-          <TouchableWithoutFeedback // This touchable closes modal.
+          isVisible={this.props.phrases.modalVisible} >
+          <TouchableWithoutFeedback // This is touchable closes modal.
             onPress={this.props.onPressModal} >
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
               <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }} >
