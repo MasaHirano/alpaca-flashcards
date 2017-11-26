@@ -6,29 +6,14 @@
 
 import React from 'react';
 import { StyleSheet, View, Text, AsyncStorage, TouchableOpacity } from 'react-native';
-import { GoogleSignin, GoogleSigninButton } from 'react-native-google-signin';
+import { GoogleSigninButton } from 'react-native-google-signin';
 import _ from 'lodash';
-
-import Config from '../app/config';
 
 import SettingsList from '../containers/SettingsList';
 
 export default class Signin extends React.Component {
   constructor(props) {
     super(props);
-  }
-
-  componentDidMount() {
-  }
-
-  get _loggedInMessage() {
-    console.log('_loggedInMessage', this.props);
-    const { user } = this.props.signin;
-    if (! _.isEmpty(user)) {
-      return `Signed in as ${user.email}`;
-    } else {
-      return 'Not sign in yet';
-    }
   }
 
   render() {
@@ -52,7 +37,7 @@ export default class Signin extends React.Component {
         </View>
 
         <TouchableOpacity
-          onPress={this._signOut.bind(this)} >
+          onPress={this.props.onPressSignOut} >
           <View
             style={{ marginTop: 10, display: 'flex', flexDirection: 'row', alignItems: 'center' }}
             onPress={() => { console.log('signOut was tapped') }} >
@@ -70,8 +55,12 @@ export default class Signin extends React.Component {
     );
   }
 
-  _signOut() {
-    this.props.onPressSignOut();
+  get _loggedInMessage() {
+    const { user } = this.props.signin;
+    if (! _.isEmpty(user)) {
+      return `Signed in as ${user.email}`;
+    }
+    return 'Not sign in yet';
   }
 }
 

@@ -8,11 +8,7 @@ import {
 
 function initializeState() {
   return {
-    sheets: [],        // List of spreadsheets
-    innerSheets: [],   // List of titles in a spreadsheet
     user: {},          // Google user objects
-    sheetId: null,     // Active sheeetId
-    sheetTitle: null,  // Active sheetTitle
   };
 }
 

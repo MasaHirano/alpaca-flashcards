@@ -5,12 +5,10 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, TouchableWithoutFeedback, RefreshControl, AsyncStorage } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, TouchableWithoutFeedback, RefreshControl } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
-import { GoogleSignin } from 'react-native-google-signin';
-import _ from 'lodash';
 
 import realm from '../app/db/realm';
 
@@ -24,7 +22,7 @@ export default class Phrases extends React.Component {
           name='archive'
           color='blue'
           backgroundColor='transparent'
-          onPress={() => params.archivePickups()}
+          onPress={() => { params.archivePickups() }}
         />
       ),
     };
@@ -62,9 +60,8 @@ export default class Phrases extends React.Component {
           animationOut='fadeOut'
           animationInTiming={100}
           animationOutTiming={100}
-          isVisible={this.props.phrases.modalVisible}
-          onRequestClose={() => {}} >
-          <TouchableWithoutFeedback // This touchable closes modal.
+          isVisible={this.props.phrases.modalVisible} >
+          <TouchableWithoutFeedback // This is touchable closes modal.
             onPress={this.props.onPressModal} >
             <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }} >
               <View style={{ height: '20%', backgroundColor: 'white', padding: 10 }} >

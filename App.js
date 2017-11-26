@@ -15,7 +15,7 @@ import configureStore from './store/configureStore'
 import Phrases from './containers/Phrases';
 import Signin from './containers/Signin';
 import SettingsList from './containers/SettingsList';
-import SettingsListChild from './components/SettingsListChild';
+import SettingsListChild from './containers/SettingsListChild';
 
 const Drawer = DrawerNavigator({
   Phrases: {
