@@ -22,7 +22,7 @@ export default class Phrases extends React.Component {
           name='archive'
           color='blue'
           backgroundColor='transparent'
-          onPress={() => params.archivePickups()}
+          onPress={params.archivePickups}
         />
       ),
     };

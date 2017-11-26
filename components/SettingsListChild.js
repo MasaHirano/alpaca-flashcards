@@ -30,11 +30,7 @@ export default class SettingsListChild extends React.Component {
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
-        // onPress={() => { this._saveSelectedData({ item, index }) }} >
-        onPress={() => {
-          onSelectListRow({ item: item.data, index })
-          navigation.goBack();
-        }} >
+        onPress={() => { this._onPressItemRow({ item, index }) }} >
         <View style={styles.phraseView} >
           <Text>
             {item.displayName}
@@ -42,6 +38,11 @@ export default class SettingsListChild extends React.Component {
         </View>
       </TouchableHighlight>
     );
+  }
+
+  _onPressItemRow({ item, index }) {
+    onSelectListRow({ item: item.data, index })
+    navigation.goBack();
   }
 }
 
