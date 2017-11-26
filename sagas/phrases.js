@@ -14,6 +14,7 @@ import {
   requestReadGoogleSheetInfo,
   requestUpdateGoogleSheet,
   successReadGoogleSheetInfo,
+  successRefreshPhrases,
 } from '../actions';
 
 export function* handleReadGoogleSheetInfo() {
@@ -91,7 +92,7 @@ export function* handleRefreshPhrases() {
 
     const successfullyImported = yield call(_importData, { user, spreadsheet, endpoint });
     if (successfullyImported) {
-      yield put(requestUpdateGoogleSheet());
+      yield put(successRefreshPhrases());
       _saveLastSyncedAt(new Date());
     }
   }

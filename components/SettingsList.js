@@ -1,29 +1,10 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
-import { GoogleSignin } from 'react-native-google-signin';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import _ from 'lodash';
-
-import Config from '../app/config';
 
 export default class SettingsList extends React.Component {
   constructor(props) {
     super(props);
-  }
-
-  _onPress({ item, index }) {
-    this.props.navigation.navigate('SettingsListChild', {
-      onDidMount: item.onDidMount,
-      onSelectListRow: item.onSelectListRow,
-    });
-    // this.props.navigation.navigate('SettingsListChild', {
-    //   type: item.key,
-    //   onSelect: (data) => {
-    //     console.log('onSelect has runned', data);
-    //     this.setState(data);
-    //   },
-    //   spreadsheet: this.props.phrases.spreadsheet,
-    // });
   }
 
   render() {
@@ -41,13 +22,9 @@ export default class SettingsList extends React.Component {
 
   _renderItem({ item, index }) {
     const { navigation } = this.props,
-          { spreadsheet } = this.props.phrases;
-    const selectedItem = spreadsheet[item.key];
-    // if (item.key === 'sheetId') {
-    //   var selectedItem = spreadsheet.name;
-    // } else if (item.key === 'sheetTitle') {
-    //   var selectedItem = spreadsheet.title;
-    // }
+          { spreadsheet } = this.props.phrases,
+          selectedItem = spreadsheet[item.key];
+
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
@@ -68,6 +45,13 @@ export default class SettingsList extends React.Component {
         </View>
       </TouchableHighlight>
     );
+  }
+
+  _onPress({ item, index }) {
+    this.props.navigation.navigate('SettingsListChild', {
+      onDidMount: item.onDidMount,
+      onSelectListRow: item.onSelectListRow,
+    });
   }
 
   _getListData() {

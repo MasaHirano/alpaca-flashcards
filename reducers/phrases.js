@@ -6,6 +6,7 @@ import {
   REQUEST_SHOW_PHRASE,
   REQUEST_CLOSE_MODAL,
   REQUEST_REFRESH_PHRASES,
+  SUCCESS_REFRESH_PHRASES,
   REQUEST_IMPORT_PHRASES,
   SUCCESS_READ_GOOGLE_SHEET_INFO,
 } from '../actions';
@@ -76,11 +77,15 @@ export default function reducer(state = initializeState(), action) {
         refreshing: true,
       });
 
-    case REQUEST_IMPORT_PHRASES:
+    case SUCCESS_REFRESH_PHRASES:
       return Object.assign({}, state, {
         refreshing: false,
         data: pickupPhrases(),
       });
+
+    case SUCCESS_READ_GOOGLE_SHEET_INFO:
+      return Object.assign({}, state, action.payload);
+
 
     default:
       return state;

@@ -16,6 +16,8 @@ export const requestCloseModal = createAction(REQUEST_CLOSE_MODAL);
 
 export const REQUEST_REFRESH_PHRASES = 'REQUEST_REFRESH_PHRASES';
 export const requestRefreshPhrases = createAction(REQUEST_REFRESH_PHRASES);
+export const SUCCESS_REFRESH_PHRASES = 'SUCCESS_REFRESH_PHRASES';
+export const successRefreshPhrases = createAction(SUCCESS_REFRESH_PHRASES);
 
 export const REQUEST_IMPORT_PHRASES = 'REQUEST_IMPORT_PHRASES';
 export const requestImportPhrases = createAction(REQUEST_IMPORT_PHRASES);

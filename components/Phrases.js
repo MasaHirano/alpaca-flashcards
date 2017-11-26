@@ -5,12 +5,10 @@
  */
 
 import React from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, TouchableWithoutFeedback, RefreshControl, AsyncStorage } from 'react-native';
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, TouchableWithoutFeedback, RefreshControl } from 'react-native';
 import Swipeout from 'react-native-swipeout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Modal from 'react-native-modal';
-import { GoogleSignin } from 'react-native-google-signin';
-import _ from 'lodash';
 
 import realm from '../app/db/realm';
 
