@@ -1,6 +1,8 @@
 import realm from '../app/db/realm';
 
 import {
+  REQUEST_RETRIEVE_GOOGLE_FILES,
+  REQUEST_RETRIEVE_GOOGLE_SHEETS,
   SUCCESS_RETRIEVE_GOOGLE_FILES,
   SUCCESS_RETRIEVE_GOOGLE_SHEETS,
 } from '../actions';
@@ -14,9 +16,15 @@ function initializeState() {
 export default function reducer(state = initializeState(), action) {
   console.log(`[reducer]${action.type} called. payload: %O, state: %O`, action.payload, state);
   switch (action.type) {
+    case REQUEST_RETRIEVE_GOOGLE_FILES:
+    case REQUEST_RETRIEVE_GOOGLE_SHEETS:
+      return Object.assign({}, state, {
+        items: [],
+      });
+
     case SUCCESS_RETRIEVE_GOOGLE_FILES:
       return Object.assign({}, state, {
-        items: action.payload.map(row => ({ displayName: row.name, data: row })),
+        items: action.payload,
       });
 
     case SUCCESS_RETRIEVE_GOOGLE_SHEETS:

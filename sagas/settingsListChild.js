@@ -29,7 +29,8 @@ export function* handleRetrieveGoogleFiles() {
       .then((responseJson) => responseJson.files);
     });
 
-    yield put(successRetrieveGoogleFiles(files));
+    const payload = files.map(row => ({ displayName: row.name, data: row }));
+    yield put(successRetrieveGoogleFiles(payload));
   }
 }
 
@@ -47,7 +48,8 @@ export function* handleRetrieveGoogleSheets() {
       .then((responseJson) => responseJson.sheets);
     });
 
-    yield put(successRetrieveGoogleSheets(sheets));
+    const payload = sheets.map(row => ({ displayName: row.properties.title, data: row }));
+    yield put(successRetrieveGoogleSheets(payload));
   }
 }
 
@@ -62,7 +64,7 @@ export function* handleSelectGoogleFile() {
       continue;
     }
 
-    // Save sheetId and sheetTitle to local storage.
+    // Save sheetId to local storage.
     const keyValuePairs = [
       ['GoogleSpreadsheet.id', selectedFile.id],
       ['GoogleSpreadsheet.name', selectedFile.name],
@@ -92,31 +94,24 @@ export function* handleSelectGoogleSheet() {
     const action = yield take(REQUEST_SELECT_GOOGLE_SHEET);
 
     const spreadsheet = yield select((state) => state.phrases.spreadsheet);
-    const selectedSheet = action.payload.item.properties;
+    const selectedSheet = action.payload.item,
+          selectedSheetTitle = selectedSheet.properties.title;
 
-
-    if (item.properties.title !== spreadsheet.title) {
+    if (selectedSheetTitle === spreadsheet.title) {
       continue;
     }
 
-    // Save sheetId and sheetTitle to local storage.
-    const keyValuePairs = [
-      ['GoogleSpreadsheet.id', item.id],
-      ['GoogleSpreadsheet.name', item.name],
-      ['GoogleSpreadsheet.title', ''],
-    ];
+    // Save sheetTitle to local storage.
     try {
-      yield call([AsyncStorage, 'multiSet'], keyValuePairs);
-    } catch (errors) {
-      console.error('[saga]handleSelectGoogleFile. %O', errors);
+      yield call([AsyncStorage, 'setItem'], 'GoogleSpreadsheet.title', selectedSheetTitle);
+    } catch (error) {
+      console.error('[saga]handleSelectGoogleSheet. %O', error);
       continue;
     }
 
     const payload = {
       spreadsheet: Object.assign({}, spreadsheet, {
-        id: selectedFile.id,
-        name: selectedFile.name,
-        title: null,
+        title: selectedSheetTitle,
       }),
     };
 
