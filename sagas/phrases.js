@@ -4,12 +4,15 @@ import { GoogleSignin } from 'react-native-google-signin';
 import _ from 'lodash';
 
 import Config from '../app/config';
+import Importer from '../app/Importer';
 import realm from '../app/db/realm';
 import {
   REQUEST_UPDATE_GOOGLE_SHEET,
   REQUEST_READ_GOOGLE_SHEET_INFO,
+  REQUEST_REFRESH_PHRASES,
   requestRetrieveGoogleUser,
   requestReadGoogleSheetInfo,
+  requestUpdateGoogleSheet,
   successReadGoogleSheetInfo,
 } from '../actions';
 
@@ -75,10 +78,49 @@ export function* handleUpdateGoogleSheet() {
     });
     console.log('[saga]handleUpdateGoogleSheet. API-call result: %O', response);
 
-    AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', new Date(), (error) => {
+    _saveLastSyncedAt(new Date());
+  }
+}
+
+export function* handleRefreshPhrases() {
+  while (true) {
+    const action = yield take(REQUEST_REFRESH_PHRASES);
+
+    const [user, spreadsheet] = yield select((state) => _.at(state, ['signin.user', 'phrases.spreadsheet']));
+    const endpoint = Config.googleAPI.sheetsEndpoint;
+
+    const successfullyImported = yield call(_importData, { user, spreadsheet, endpoint });
+    debugger
+    if (successfullyImported) {
+      yield put(requestUpdateGoogleSheet());
+      _saveLastSyncedAt(new Date());
+    }
+  }
+}
+
+function _saveLastSyncedAt(date, onError = null) {
+  if (onError === null) {
+    onError = (error) => {
       if (! _.isEmpty(error)) {
         console.error(error);
       }
-    });
+    };
   }
+  AsyncStorage.setItem('GoogleSpreadsheet.lastSyncedAt', date,  onError);
+}
+
+function _importData({ user, spreadsheet, endpoint }) {
+  return fetch(`${endpoint}/${spreadsheet.id}/values/Sheet1!A2:F999`, {
+    headers: { 'Authorization': `Bearer ${user.accessToken}` },
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+    const importer = new Importer();
+    importer.import(responseJson.values);
+    return true;
+  })
+  .catch((error) => {
+    console.error('_importData ', error);
+    return false;
+  });
 }
