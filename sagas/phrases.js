@@ -90,7 +90,6 @@ export function* handleRefreshPhrases() {
     const endpoint = Config.googleAPI.sheetsEndpoint;
 
     const successfullyImported = yield call(_importData, { user, spreadsheet, endpoint });
-    debugger
     if (successfullyImported) {
       yield put(requestUpdateGoogleSheet());
       _saveLastSyncedAt(new Date());

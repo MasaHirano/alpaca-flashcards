@@ -6,35 +6,31 @@ import _ from 'lodash';
 
 import Config from '../app/config';
 
-const data = [
-        { key: 'sheetId', name: 'Sheet ID' },
-        { key: 'sheetTitle', name: 'Sheet Title' },
-      ];
-
 export default class SettingsList extends React.Component {
   constructor(props) {
     super(props);
   }
 
-  componentDidMount() {
-  }
-
   _onPress({ item, index }) {
     this.props.navigation.navigate('SettingsListChild', {
-      type: item.key,
-      onSelect: (data) => {
-        console.log('onSelect has runned', data);
-        this.setState(data);
-      },
-      spreadsheet: this.props.phrases.spreadsheet,
+      onDidMount: item.onDidMount,
+      onSelectListRow: item.onSelectListRow,
     });
+    // this.props.navigation.navigate('SettingsListChild', {
+    //   type: item.key,
+    //   onSelect: (data) => {
+    //     console.log('onSelect has runned', data);
+    //     this.setState(data);
+    //   },
+    //   spreadsheet: this.props.phrases.spreadsheet,
+    // });
   }
 
   render() {
     return (
       <View style={styles.container} >
         <FlatList
-          data={data}
+          data={this._getListData()}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -46,12 +42,12 @@ export default class SettingsList extends React.Component {
   _renderItem({ item, index }) {
     const { navigation } = this.props,
           { spreadsheet } = this.props.phrases;
-    console.log('SettingList._renderItem', spreadsheet);
-    if (item.key === 'sheetId') {
-      var selectedItem = spreadsheet.name;
-    } else if (item.key === 'sheetTitle') {
-      var selectedItem = spreadsheet.title;
-    }
+    const selectedItem = spreadsheet[item.key];
+    // if (item.key === 'sheetId') {
+    //   var selectedItem = spreadsheet.name;
+    // } else if (item.key === 'sheetTitle') {
+    //   var selectedItem = spreadsheet.title;
+    // }
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
@@ -67,11 +63,28 @@ export default class SettingsList extends React.Component {
               style={{ textAlign: 'right', color: 'lightgray' }}
               name='angle-right'
               size={16}
-            />
+           />
           </View>
         </View>
       </TouchableHighlight>
     );
+  }
+
+  _getListData() {
+    return [
+      {
+        key: 'name',
+        name: 'Sheet ID',
+        onDidMount: this.props.onDidMountFilesView,
+        onSelectListRow: this.props.onPressFileListRow,
+      },
+      {
+        key: 'title',
+        name: 'Sheet Title',
+        onDidMount: this.props.onDidMountSheetsView,
+        onSelectListRow: this.props.onPressSheetsListRow,
+      },
+    ];
   }
 }
 

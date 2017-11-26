@@ -8,45 +8,46 @@ import Config from '../app/config';
 export default class SettingsListChild extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      data: [],
-      sheets: [],
-      innerSheets: [],
-      sheetId: null,
-      sheetTitle: null,
-      user: {},
-      selectedItem: null,
-    };
+    // this.state = {
+    //   data: [],
+    //   sheets: [],
+    //   innerSheets: [],
+    //   sheetId: null,
+    //   sheetTitle: null,
+    //   user: {},
+    //   selectedItem: null,
+    // };
 
-    this._saveSelectedData = this._saveSelectedData.bind(this);
+    // this._saveSelectedData = this._saveSelectedData.bind(this);
   }
 
   componentDidMount() {
-    GoogleSignin.configure(Config.googleSignin).then(() => {
-      GoogleSignin.currentUserAsync().then((user) => {
-        this.setState({ user });
-        AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title'], (err, stores) => {
-          const sheetInfo = _.fromPairs(stores);
-          if (this.props.navigation.state.params.type === 'sheetId') {
-            this.setState({ selectedItem: sheetInfo['GoogleSpreadsheet.id'] });
-            this._fetchSheets();
-          } else if (this.props.navigation.state.params.type === 'sheetTitle') {
-            this.setState({
-              sheetId: sheetInfo['GoogleSpreadsheet.id'],
-              selectedItem: sheetInfo['GoogleSpreadsheet.title'],
-            });
-            this._fetchSheetTitles();
-          }
-        });
-      }).done();
-    });
+    this.props.navigation.state.params.onDidMount();
+    // GoogleSignin.configure(Config.googleSignin).then(() => {
+    //   GoogleSignin.currentUserAsync().then((user) => {
+    //     this.setState({ user });
+    //     AsyncStorage.multiGet(['GoogleSpreadsheet.id', 'GoogleSpreadsheet.title'], (err, stores) => {
+    //       const sheetInfo = _.fromPairs(stores);
+    //       if (this.props.navigation.state.params.type === 'sheetId') {
+    //         this.setState({ selectedItem: sheetInfo['GoogleSpreadsheet.id'] });
+    //         this._fetchSheets();
+    //       } else if (this.props.navigation.state.params.type === 'sheetTitle') {
+    //         this.setState({
+    //           sheetId: sheetInfo['GoogleSpreadsheet.id'],
+    //           selectedItem: sheetInfo['GoogleSpreadsheet.title'],
+    //         });
+    //         this._fetchSheetTitles();
+    //       }
+    //     });
+    //   }).done();
+    // });
   }
 
   render() {
     return (
       <View style={styles.container}>
         <FlatList
-          data={this.state.data}
+          data={this.props.settingsListChild.items}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => index}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -55,77 +56,81 @@ export default class SettingsListChild extends React.Component {
     );
   }
 
-  _fetchSheets() {
-    fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
-      headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
-    })
-    .then((response) => {
-      response.json().then((data) => {
-        console.log('SettingsListChild#_fetchSheets', data);
-        this.setState({ data: data.files });
-        if (_.isEmpty(this.state.sheetTitle)) {
-          this.setState({ selectedItem: _.first(data.files).id });
-        }
-      });
-    });
-  }
+  // _fetchSheets() {
+  //   fetch("https://www.googleapis.com/drive/v3/files?q=mimeType%3D'application%2Fvnd.google-apps.spreadsheet'", {
+  //     headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
+  //   })
+  //   .then((response) => response.json())
+  //   .then((responseJson) => {
+  //     console.log('SettingsListChild#_fetchSheets', responseJson);
+  //     this.setState({ data: responseJson.files });
+  //     if (_.isEmpty(this.state.sheetTitle)) {
+  //       this.setState({ selectedItem: _.first(responseJson.files).id });
+  //     }
+  //   });
+  // }
 
-  _fetchSheetTitles() {
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${this.state.sheetId}?includeGridData=false`, {
-      headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
-    })
-    .then((response) => {
-      response.json().then((data) => {
-        console.log('SettingsListChild#_fetchSheetTitles', data);
-        this.setState({ data: data.sheets });
-        if (_.isEmpty(this.state.sheetId)) {
-          this.setState({ selectedItem: _.first(data.sheets).properties.title });
-        }
-      });
-    });
-  }
+  // _fetchSheetTitles() {
+  //   fetch(`https://sheets.googleapis.com/v4/spreadsheets/${this.state.sheetId}?includeGridData=false`, {
+  //     headers: { 'Authorization': `Bearer ${this.state.user.accessToken}` },
+  //   })
+  //   .then((response) => response.json())
+  //   .then((responseJson) => {
+  //     console.log('SettingsListChild#_fetchSheetTitles', responseJson);
+  //     this.setState({ data: responseJson.sheets });
+  //     if (_.isEmpty(this.state.sheetId)) {
+  //       this.setState({ selectedItem: _.first(responseJson.sheets).properties.title });
+  //     }
+  //   });
+  // }
 
-  _saveSelectedData({ item, index }) {
-    const { navigation } = this.props,
-          { type, onSelect, spreadsheet } = navigation.state.params;
-    const selectedItem = {},
-          keyValuePairs = [];
+  // _saveSelectedData({ item, index }) {
+  //   const { navigation } = this.props,
+  //         { type, onSelect, spreadsheet } = navigation.state.params;
+  //   const selectedItem = {},
+  //         keyValuePairs = [];
 
-    console.log('SettingsListChild#_saveSelectedData', item);
-    if ((type === 'sheetId') && (item.id !== spreadsheet.id)) {
-      keyValuePairs.push(
-        ['GoogleSpreadsheet.id', item.id],
-        ['GoogleSpreadsheet.name', item.name],
-        ['GoogleSpreadsheet.title', ''],
-      );
-      _.assign(selectedItem, { id: item.id, name: item.name, title: null });
-    } else if ((type === 'sheetTitle') && (item.properties.title !== spreadsheet.title)) {
-      keyValuePairs.push(['GoogleSpreadsheet.title', item.properties.title]);
-      _.assign(selectedItem, { title: item.properties.title });
-    }
-    // Save sheetId and sheetTitle to local storage.
-    AsyncStorage.multiSet(keyValuePairs, (errors) => {
-      if (! _.isEmpty(errors)) {
-        console.error('Signin#componentWillUnmount', errors);
-      }
-    });
-    navigation.goBack();
-    onSelect(_.merge(spreadsheet, selectedItem));
-  }
+  //   console.log('SettingsListChild#_saveSelectedData', item);
+  //   if ((type === 'sheetId') && (item.id !== spreadsheet.id)) {
+  //     keyValuePairs.push(
+  //       ['GoogleSpreadsheet.id', item.id],
+  //       ['GoogleSpreadsheet.name', item.name],
+  //       ['GoogleSpreadsheet.title', ''],
+  //     );
+  //     _.assign(selectedItem, { id: item.id, name: item.name, title: null });
+  //   } else if ((type === 'sheetTitle') && (item.properties.title !== spreadsheet.title)) {
+  //     keyValuePairs.push(['GoogleSpreadsheet.title', item.properties.title]);
+  //     _.assign(selectedItem, { title: item.properties.title });
+  //   }
+  //   // Save sheetId and sheetTitle to local storage.
+  //   AsyncStorage.multiSet(keyValuePairs, (errors) => {
+  //     if (! _.isEmpty(errors)) {
+  //       console.error('Signin#componentWillUnmount', errors);
+  //     }
+  //   });
+  //   navigation.goBack();
+  //   onSelect(_.merge(spreadsheet, selectedItem));
+  // }
 
   _renderItem({ item, index }) {
-    if (this.props.navigation.state.params.type === 'sheetId') {
-      var text = item.name;
-    } else if (this.props.navigation.state.params.type === 'sheetTitle') {
-      var text = item.properties.title;
-    }
+    // if (this.props.navigation.state.params.type === 'sheetId') {
+    //   var text = item.name;
+    // } else if (this.props.navigation.state.params.type === 'sheetTitle') {
+    //   var text = item.properties.title;
+    // }
+    const { navigation } = this.props,
+          { onSelectListRow } = navigation.state.params;
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
-        onPress={() => { this._saveSelectedData({ item, index }) }} >
+        // onPress={() => { this._saveSelectedData({ item, index }) }} >
+        onPress={() => {
+          onSelectListRow({ item: item.data, index })
+          navigation.goBack();
+        }} >
         <View style={styles.phraseView} >
           <Text>
-            {text}
+            {item.displayName}
           </Text>
         </View>
       </TouchableHighlight>

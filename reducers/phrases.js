@@ -31,13 +31,18 @@ function initializeState() {
   if (phrases.length === 0) {
     phrases = pickupPhrases();
   }
+
   return {
     data: phrases,
     modalVisible: false,
     refreshing: false,
     selectedPhrase: {},
-    user: {},
-    spreadsheet: {},
+    spreadsheet: {
+      id: null,
+      name: null,
+      title: null,
+      lastSyncedAt: null,
+    },
   };
 }
 
