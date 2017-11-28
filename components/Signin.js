@@ -24,6 +24,7 @@ export default class Signin extends React.Component {
             style={{ width: 312, height: 48 }}
             size={GoogleSigninButton.Size.Wide}
             color={GoogleSigninButton.Color.Dark}
+            onPress={this.props.onPressSignIn}
           />
           <Text style={{ color: 'dimgray', paddingLeft: 5 }} >
             {this._loggedInMessage}
