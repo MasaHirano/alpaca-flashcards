@@ -1,6 +1,5 @@
 import Signin from '../components/Signin';
 import { connect } from 'react-redux';
-import _ from 'lodash';
 
 import {
   requestGoogleSignIn,

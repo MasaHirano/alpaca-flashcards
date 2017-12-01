@@ -1,6 +1,5 @@
 import Phrases from '../components/Phrases';
 import { connect } from 'react-redux';
-import _ from 'lodash';
 
 import {
   requestCompletePhrase,

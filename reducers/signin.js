@@ -1,5 +1,3 @@
-import realm from '../app/db/realm';
-
 import {
   SUCCESS_RETRIEVE_GOOGLE_USER,
   SUCCESS_GOOGLE_SIGN_IN,
@@ -8,7 +6,7 @@ import {
 
 function initializeState() {
   return {
-    user: {},          // Google user objects
+    user: {}, // @see https://github.com/devfd/react-native-google-signin#3-user
   };
 }
 

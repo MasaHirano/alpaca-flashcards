@@ -1,6 +1,8 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Phrase from '../app/models/Phrase';
+import SettingsListChild from './SettingsListChild';
 
 export default class SettingsList extends React.Component {
   constructor(props) {
@@ -13,7 +15,6 @@ export default class SettingsList extends React.Component {
         <FlatList
           data={this._generateListData()}
           renderItem={this._renderItem.bind(this)}
-          keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
@@ -44,7 +45,7 @@ export default class SettingsList extends React.Component {
   }
 
   _onPress({ item, index }) {
-    this.props.navigation.navigate('SettingsListChild', {
+    this.props.navigation.navigate(SettingsListChild.name, {
       onDidMount: item.onDidMount,
       onSelectListRow: item.onSelectListRow,
     });
@@ -61,13 +62,13 @@ export default class SettingsList extends React.Component {
     return [
       {
         key: 'File name',
-        value: spreadsheet['name'],
+        value: spreadsheet.name,
         onDidMount: onDidMountFilesView,
         onSelectListRow: onPressFileListRow,
       },
       {
         key: 'Sheet title',
-        value: spreadsheet['title'],
+        value: spreadsheet.title,
         onDidMount: onDidMountSheetsView,
         onSelectListRow: onPressSheetsListRow,
       },
