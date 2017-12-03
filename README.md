@@ -21,4 +21,4 @@ Write like this.
 
 ### Open app and load phrases
 
-![Load phrases](/appvideo.gif)
+![Load phrases](/AlpacaFlashcards_demo.gif)
