@@ -18,6 +18,8 @@ export function* handleGoogleSignIn() {
   while (true) {
     const action = yield take(REQUEST_GOOGLE_SIGN_IN);
 
+    yield call([GoogleSignin, 'hasPlayServices'], { autoResolve: true });
+    yield call([GoogleSignin, 'configure'], Config.googleSignin);
     const user = yield call([GoogleSignin, 'signIn']);
 
     yield put(successGoogleSignIn({ user }));
