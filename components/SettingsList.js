@@ -11,7 +11,7 @@ export default class SettingsList extends React.Component {
     return (
       <View style={styles.container} >
         <FlatList
-          data={this._getListData()}
+          data={this._generateListData()}
           renderItem={this._renderItem.bind(this)}
           keyExtractor={(item, index) => item.key}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -21,10 +21,6 @@ export default class SettingsList extends React.Component {
   }
 
   _renderItem({ item, index }) {
-    const { navigation } = this.props,
-          { spreadsheet } = this.props.phrases,
-          selectedItem = spreadsheet[item.key];
-
     return (
       <TouchableHighlight
         underlayColor='rgba(192,192,192,1)'
@@ -32,7 +28,7 @@ export default class SettingsList extends React.Component {
         <View style={styles.phraseView} >
           <View style={{ width: '95%', justifyContent: 'center' }} >
             <Text>
-              {item.name}: {selectedItem}
+              {item.key}: {item.value}
             </Text>
           </View>
           <View style={{ width: '5%', justifyContent: 'center' }} >
@@ -54,19 +50,26 @@ export default class SettingsList extends React.Component {
     });
   }
 
-  _getListData() {
+  _generateListData() {
+    const {
+      phrases,
+      onDidMountFilesView, onPressFileListRow,
+      onDidMountSheetsView, onPressSheetsListRow
+    } = this.props;
+    const { spreadsheet } = phrases;
+
     return [
       {
-        key: 'name',
-        name: 'Sheet ID',
-        onDidMount: this.props.onDidMountFilesView,
-        onSelectListRow: this.props.onPressFileListRow,
+        key: 'File name',
+        value: spreadsheet['name'],
+        onDidMount: onDidMountFilesView,
+        onSelectListRow: onPressFileListRow,
       },
       {
-        key: 'title',
-        name: 'Sheet Title',
-        onDidMount: this.props.onDidMountSheetsView,
-        onSelectListRow: this.props.onPressSheetsListRow,
+        key: 'Sheet title',
+        value: spreadsheet['title'],
+        onDidMount: onDidMountSheetsView,
+        onSelectListRow: onPressSheetsListRow,
       },
     ];
   }
