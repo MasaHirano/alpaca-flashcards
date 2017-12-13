@@ -1,5 +1,3 @@
-import realm from '../app/db/realm';
-
 import {
   REQUEST_RETRIEVE_GOOGLE_FILES,
   REQUEST_RETRIEVE_GOOGLE_SHEETS,
@@ -23,10 +21,6 @@ export default function reducer(state = initializeState(), action) {
       });
 
     case SUCCESS_RETRIEVE_GOOGLE_FILES:
-      return Object.assign({}, state, {
-        items: action.payload,
-      });
-
     case SUCCESS_RETRIEVE_GOOGLE_SHEETS:
       return Object.assign({}, state, {
         items: action.payload,

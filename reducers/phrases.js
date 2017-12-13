@@ -83,10 +83,6 @@ export default function reducer(state = initializeState(), action) {
         data: pickupPhrases(),
       });
 
-    case SUCCESS_READ_GOOGLE_SHEET_INFO:
-      return Object.assign({}, state, action.payload);
-
-
     default:
       return state;
   }
