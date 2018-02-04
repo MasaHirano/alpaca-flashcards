@@ -120,7 +120,7 @@ function _importData({ user, spreadsheet, endpoint }) {
     return true;
   })
   .catch((error) => {
-    console.error('_importData ', error);
+    console.error(error);
     return false;
   });
 }

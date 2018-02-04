@@ -5,6 +5,16 @@ export default class Phrase {
     return tabSeparator;
   }
 
+  static getFieldsTypeOf(type) {
+    const props = this.schema.properties;
+    return Object.keys(props).filter(field => {
+      return (typeof props[field] === 'string')
+        ? props[field] === type
+        : props[field].type === type
+        ;
+    });
+  }
+
   get key() {
     return this.sentence;
   }
