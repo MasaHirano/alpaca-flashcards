@@ -35,10 +35,10 @@ export default class Importer {
   }
 
   _savePhrase(row, tags) {
-    var params = { id: parseInt(row['id'], 10), sentence: row['sentence'], tags: tags };
-    ['completedAt', 'createdAt', 'updatedAt'].forEach(field => {
+    const params = { id: parseInt(row['id'], 10), sentence: row['sentence'], tags: tags };
+    Phrase.getFieldsTypeOf('date').forEach(field => {
       const dateValue = new Date(row[field]);
-      if (! isNaN(dateValue)) {
+      if (!isNaN(dateValue)) {
         params[field] = dateValue;
       }
     });
